@@ -25,7 +25,7 @@ import java.util.List;
  */
 @SuppressWarnings("deprecation")
 public class CenteredCameraPreviewHolder extends ViewGroup implements SurfaceHolder.Callback {
-    private final String TAG = "KRUMBS-CntrCamHolder";
+    private final String TAG = CameraFragment.class.getSimpleName();
     SurfaceView surfaceView;
     SurfaceHolder surfaceHolder;
     Size previewSize;
