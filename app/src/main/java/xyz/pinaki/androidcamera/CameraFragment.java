@@ -33,7 +33,7 @@ import java.util.List;
  */
 
 @SuppressWarnings("deprecation")
-public class CameraFragment extends Fragment implements Camera.PictureCallback{
+public class CameraFragment extends Fragment implements Camera.PictureCallback {
     private static final int COMPRESS_IMAGE_MAX_DIMENSION = 800;
     private static final String TAG = CameraFragment.class.getSimpleName();
     private static final int REQUEST_CAMERA = 0;

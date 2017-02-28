@@ -5,6 +5,7 @@ package xyz.pinaki.androidcamera;
  */
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
@@ -24,7 +25,7 @@ import java.util.List;
  * support preview sizes at the same aspect ratio as the device's display.
  */
 @SuppressWarnings("deprecation")
-public class CenteredCameraPreviewHolder extends ViewGroup implements SurfaceHolder.Callback {
+/* package */ class CenteredCameraPreviewHolder extends ViewGroup implements SurfaceHolder.Callback {
     private final String TAG = CameraFragment.class.getSimpleName();
     SurfaceView surfaceView;
     SurfaceHolder surfaceHolder;
@@ -40,8 +41,11 @@ public class CenteredCameraPreviewHolder extends ViewGroup implements SurfaceHol
     // resulting in "RuntimeException takePicture failed" in android.hardware.Camera.takePicture(Camera.java:1436)
     // http://stackoverflow.com/questions/21723557/java-lang-runtimeexception-takepicture-failed
     private boolean safeToTakePicture = false;
+    public CenteredCameraPreviewHolder(Context context) {
+        super(context);
+    }
 
-    CenteredCameraPreviewHolder(Activity activity) {
+    public CenteredCameraPreviewHolder(Activity activity) {
         super(activity);
         this.activity = activity;
         addSurfaceView();

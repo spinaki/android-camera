@@ -1,5 +1,5 @@
 package xyz.pinaki.androidcamera;
 
-public enum CameraFlashMode {
+/* package */ enum CameraFlashMode {
     OFF, AUTO, ON;
 }

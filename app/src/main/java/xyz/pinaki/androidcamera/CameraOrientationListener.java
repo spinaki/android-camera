@@ -15,16 +15,16 @@ import android.view.OrientationEventListener;
  * The orientation will be normalized to return it in steps of 90 degrees
  * (0, 90, 180, 270).
  */
-public class CameraOrientationListener extends OrientationEventListener {
-    public int currentNormalizedOrientation;
-    public int rememberedNormalizedOrientation;
+/* package */ class CameraOrientationListener extends OrientationEventListener {
+    /* package */ int currentNormalizedOrientation;
+    /* package */ int rememberedNormalizedOrientation;
     private CameraFragment cameraFragment;
 
-    public CameraOrientationListener(Context context) {
+    /* package */ CameraOrientationListener(Context context) {
         super(context, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
-    public void setCamera1Fragment (CameraFragment camera1Fragment) {
+    /* package */ void setCamera1Fragment (CameraFragment camera1Fragment) {
         this.cameraFragment = camera1Fragment;
     }
     @Override
@@ -57,11 +57,11 @@ public class CameraOrientationListener extends OrientationEventListener {
         throw new RuntimeException("The physics as we know them are no more. Watch out for anomalies.");
     }
 
-    public void rememberOrientation() {
+    /* package */ void rememberOrientation() {
         rememberedNormalizedOrientation = currentNormalizedOrientation;
     }
 
-    public int getRememberedOrientation() {
+    /* package */ int getRememberedOrientation() {
         return rememberedNormalizedOrientation;
     }
 }

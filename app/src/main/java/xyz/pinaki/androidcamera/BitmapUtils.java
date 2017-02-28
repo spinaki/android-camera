@@ -12,7 +12,7 @@ import android.util.Log;
  *
  * @author Rekha
  */
-public class BitmapUtils {
+/* package */ class BitmapUtils {
     private static final int JPEG_COMPRESSION_QUALITY = 70;
     private static final String TAG = BitmapUtils.class.getSimpleName();
 
@@ -77,7 +77,7 @@ public class BitmapUtils {
 //    }
 
     // ref - https://developer.android.com/training/displaying-bitmaps/load-bitmap.html
-    public static Bitmap createSampledBitmapFromBytes(byte[] jpegByteArray, int maxDimensionSize) {
+    /* package */ static Bitmap createSampledBitmapFromBytes(byte[] jpegByteArray, int maxDimensionSize) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeByteArray(jpegByteArray, 0, jpegByteArray.length, options);
