@@ -8,6 +8,7 @@
                  android:id="@+id/container"/>
     <ImageView
             android:src="@drawable/shutter_icon" android:layout_width="50dp"
+            android:id="@+id/shutter"
             android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:layout_height="50dp" android:contentDescription="shutter icon"/>
