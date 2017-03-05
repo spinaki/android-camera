@@ -65,11 +65,15 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
     }
 
     public void takePicture() {
-        Log.i(TAG, "safeToTakePicture: " + previewHolder.getSafeToTakePicture());
-        orientationListener.rememberOrientation();
-        if (previewHolder.getSafeToTakePicture()) {
-            previewHolder.setSafeToTakePicture(false);
-            camera.takePicture(null, null, this);
+        if (previewHolder != null) {
+            Log.i(TAG, "safeToTakePicture: " + previewHolder.getSafeToTakePicture());
+            orientationListener.rememberOrientation();
+            if (previewHolder.getSafeToTakePicture()) {
+                previewHolder.setSafeToTakePicture(false);
+                camera.takePicture(null, null, this);
+            }
+        } else {
+            Log.i(TAG, "previewHolder is NULL");
         }
     }
 
@@ -107,6 +111,7 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
     public void onResume() {
         Log.i(TAG, "onResume");
         super.onResume();
+        openCamera();
         orientationListener.enable();
     }
 
@@ -114,7 +119,7 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
         Log.i(TAG, "openCamera");
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "Requesting Permissions from OpenCam");
+            Log.i(TAG, "Requesting Camera Permissions");
             requestCameraPermission();
         } else {
             Log.i(TAG, "Got Permissions in OpenCam");
@@ -152,6 +157,7 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
     public void onPause() {
         Log.i(TAG, "onPause");
         super.onPause();
+        stopAndRelease();
         orientationListener.disable();
     }
 
@@ -170,13 +176,11 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
         parentLayout = new RelativeLayout(getActivity());
         previewHolder = createCenteredCameraPreview(getActivity());
         parentLayout.addView(previewHolder, 0);
-        openCamera();
         return parentLayout;
     }
 
     @Override
     public void onDestroyView() {
-        stopAndRelease();
         super.onDestroyView();
 
     }
@@ -195,30 +199,30 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
         return previewHolder;
     }
 
-    protected boolean switchCamera() {
-        int id = (cameraId == Camera.CameraInfo.CAMERA_FACING_BACK ? Camera.CameraInfo.CAMERA_FACING_FRONT :
-                Camera.CameraInfo.CAMERA_FACING_BACK);
-        return switchCamera(id);
-    }
+//    protected boolean switchCamera() {
+//        int id = (cameraId == Camera.CameraInfo.CAMERA_FACING_BACK ? Camera.CameraInfo.CAMERA_FACING_FRONT :
+//                Camera.CameraInfo.CAMERA_FACING_BACK);
+//        return switchCamera(id);
+//    }
 
-    protected boolean switchCamera(int cameraId) {
-        if (this.cameraId == cameraId) {
-            return true;
-        }
-        this.cameraId = cameraId;
-        parentLayout.removeView(previewHolder);
-        previewHolder = createCenteredCameraPreview(getActivity());
-        // adding child at an index 0
-        parentLayout.addView(previewHolder, 0);
-        return openCamera();
-    }
+//    protected boolean switchCamera(int cameraId) {
+//        if (this.cameraId == cameraId) {
+//            return true;
+//        }
+//        this.cameraId = cameraId;
+//        parentLayout.removeView(previewHolder);
+//        previewHolder = createCenteredCameraPreview(getActivity());
+//        // adding child at an index 0
+//        parentLayout.addView(previewHolder, 0);
+//        return openCamera();
+//    }
 
-    protected boolean isFrontFacingCamera() {
-        if (cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            return true;
-        }
-        return false;
-    }
+//    protected boolean isFrontFacingCamera() {
+//        if (cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+//            return true;
+//        }
+//        return false;
+//    }
 
     protected boolean hasFlash() {
         Camera.Parameters params = camera.getParameters();
