@@ -9,11 +9,11 @@
             android:layout_centerHorizontal="true"
             android:layout_height="50dp" android:contentDescription="shutter icon"/>
     <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent"
-                    android:visibility="invisible" android:id="@+id/preview_container">
+                    android:visibility="invisible" android:id="@+id/preview_container"
+                    android:background="@color/black">
         <ImageView android:layout_width="match_parent" android:layout_height="match_parent"
                    android:id="@+id/preview_image"/>
         <ImageView android:layout_width="50dp" android:layout_height="50dp" android:id="@+id/preview_close_icon"
                    android:src="@drawable/close_icon_red" android:layout_alignParentRight="true"/>
     </RelativeLayout>
-
 </RelativeLayout>
