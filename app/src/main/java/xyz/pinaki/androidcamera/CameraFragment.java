@@ -3,6 +3,7 @@ package xyz.pinaki.androidcamera;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -111,6 +112,7 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
     public void onResume() {
         Log.i(TAG, "onResume");
         super.onResume();
+        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         openCamera();
         orientationListener.enable();
     }
@@ -181,8 +183,8 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
 
     @Override
     public void onDestroyView() {
+        Log.i(TAG, "onDestroyView");
         super.onDestroyView();
-
     }
 
     // TODO: this should not be here -- bad design.
@@ -190,8 +192,9 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
         // do nothing. do in child class.
     }
 
-    private static CenteredCameraPreviewHolder createCenteredCameraPreview(Activity activity) {
+    private CenteredCameraPreviewHolder createCenteredCameraPreview(Activity activity) {
         CenteredCameraPreviewHolder previewHolder = new CenteredCameraPreviewHolder(activity);
+        Log.i(TAG, "previewHolder created");
         previewHolder.setBackgroundColor(Color.BLACK);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams
                 .MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);

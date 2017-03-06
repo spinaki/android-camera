@@ -3,20 +3,19 @@ package xyz.pinaki.androidcamera;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = MainActivity.class.getSimpleName();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         final CameraFragment cameraFragment = CameraFragment.newInstance();
+//        cameraFragment.setRetainInstance(true);
         if (null == savedInstanceState) {
             getSupportFragmentManager().beginTransaction().replace(
-                    R.id.container, cameraFragment).commit();
+                    R.id.container, CameraFragment.newInstance(), "CameraFragment").commit();
         }
         View shutterIcon = findViewById(R.id.shutter);
         shutterIcon.setOnClickListener(new View.OnClickListener() {
