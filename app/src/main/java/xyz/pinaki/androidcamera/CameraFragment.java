@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import java.util.List;
@@ -43,7 +44,6 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
     private CameraCallback cameraCallback = null;
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
     private boolean shouldCreateLowresImage = true;
-    RelativeLayout parentLayout;
     CenteredCameraPreviewHolder previewHolder;
 
     public CameraFragment() {
@@ -175,10 +175,37 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(TAG, "onCreateView");
-        parentLayout = new RelativeLayout(getActivity());
+        RelativeLayout parentLayout = (RelativeLayout)inflater.inflate(R.layout.camera_fragment, container, false);
         previewHolder = createCenteredCameraPreview(getActivity());
         parentLayout.addView(previewHolder, 0);
         return parentLayout;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        View shutterIcon = view.findViewById(R.id.shutter);
+        shutterIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                takePicture();
+            }
+        });
+        final View previewContainer = view.findViewById(R.id.preview_container);
+        final ImageView previewImage = (ImageView) view.findViewById(R.id.preview_image);
+        setCameraCallback(new CameraCallback() {
+            @Override
+            public void onPictureTaken(Bitmap bitmap) {
+                previewContainer.setVisibility(View.VISIBLE);
+                previewImage.setImageBitmap(bitmap);
+            }
+        });
+        final ImageView previewCloseButton = (ImageView) view.findViewById(R.id.preview_close_icon);
+        previewCloseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                previewContainer.setVisibility(View.INVISIBLE);
+            }
+        });
     }
 
     @Override
