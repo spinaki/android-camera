@@ -52,6 +52,7 @@ import java.util.List;
     }
 
     private void addSurfaceView() {
+        Log.i(TAG, "addSurfaceView");
         if (surfaceView != null) {
             removeView(surfaceView);
             surfaceView = null;
@@ -85,7 +86,7 @@ import java.util.List;
         final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
         final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
         setMeasuredDimension(width, height);
-        Log.i(TAG, "onMeasure, width:" + width + ", height:" + height);
+//        Log.i(TAG, "onMeasure, width:" + width + ", height:" + height);
         if (camera != null) {
             try {
                 Camera.Parameters parameters = camera.getParameters();
@@ -93,8 +94,8 @@ import java.util.List;
                 List<Size> supportedPictureSize = parameters.getSupportedPictureSizes();
                 previewSize = getOptimalPreviewSize(supportedPreviewSizes, width, height);
                 pictureSize = getOptimalPreviewSize(supportedPictureSize, width, height);
-                Log.i(TAG, "getOptimalPreviewSize: width:" + previewSize.width + ", height:" + previewSize.height);
-                Log.i(TAG, "getOptimalPictureSize: width:" + pictureSize.width + ", height:" + pictureSize.height);
+//                Log.i(TAG, "getOptimalPreviewSize: width:" + previewSize.width + ", height:" + previewSize.height);
+//                Log.i(TAG, "getOptimalPictureSize: width:" + pictureSize.width + ", height:" + pictureSize.height);
             } catch (RuntimeException exception) {
                 Log.i(TAG, "RuntimeException caused by getParameters in onMeasure", exception);
             }
@@ -119,14 +120,14 @@ import java.util.List;
                     previewHeight = previewSize.height;
                 }
             }
-            Log.i(TAG, "Available width = " + availableWidth + ", height = " + availableHeight);
-            Log.i(TAG, "Preview Width = " + previewWidth + ", Height = " + previewHeight);
+//            Log.i(TAG, "Available width = " + availableWidth + ", height = " + availableHeight);
+//            Log.i(TAG, "Preview Width = " + previewWidth + ", Height = " + previewHeight);
             float factH = (float) availableHeight  / previewHeight ;
             float factW = (float) availableWidth / previewWidth;
             float fact = factH < factW ? factH : factW;
             int layoutHeight = (int) (previewHeight * fact);
             int layoutWidth = (int) (previewWidth * fact);
-            Log.i(TAG, "Final Preview Layout Width = " + layoutWidth + ", Height = " + layoutHeight);
+//            Log.i(TAG, "Final Preview Layout Width = " + layoutWidth + ", Height = " + layoutHeight);
             child.layout( (availableWidth - layoutWidth ) / 2 ,
                     (availableHeight - layoutHeight) / 2,
                     (availableWidth + layoutWidth ) / 2,
@@ -278,8 +279,8 @@ import java.util.List;
         }
         this.displayOrientation = displayOrientation;
         this.layoutOrientation  = degrees;
-        Log.i(TAG, "cameraInfo.orientation: " + cameraInfo.orientation + ", getDefaultDisplay.degrees: " + degrees);
-        Log.i(TAG, "configureOrientationParams, displayOrientation: " + displayOrientation);
+//        Log.i(TAG, "cameraInfo.orientation: " + cameraInfo.orientation + ", getDefaultDisplay.degrees: " + degrees);
+//        Log.i(TAG, "configureOrientationParams, displayOrientation: " + displayOrientation);
         camera.setDisplayOrientation(displayOrientation);
     }
 
