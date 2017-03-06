@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -167,6 +168,12 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
     public void onActivityCreated(Bundle savedInstanceState) {
         Log.i(TAG, "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
+        if (getActivity() instanceof  AppCompatActivity &&
+                ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
+            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        } else if ( getActivity() !=  null && getActivity().getActionBar() != null) {
+            getActivity().getActionBar().hide();
+        }
         orientationListener = new CameraOrientationListener(getActivity());
         orientationListener.setCamera1Fragment(this);
     }
