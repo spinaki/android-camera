@@ -1,6 +1,3 @@
 <resources>
-    <string name="app_name">AndroidCamera</string>
-    <string name="shutter_icon">ShutterIcon</string>
-    <string name="preview_image">PreviewImage</string>
-    <string name="close_icon">CloseIcon</string>
+    <string name="app_name">AndroidCameraExample</string>
 </resources>
