@@ -46,6 +46,7 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
     private boolean shouldCreateLowresImage = true;
     CenteredCameraPreviewHolder previewHolder;
+    RelativeLayout parentLayout;
 
     public CameraFragment() {
         // empty constructor
@@ -182,9 +183,15 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(TAG, "onCreateView");
-        RelativeLayout parentLayout = (RelativeLayout)inflater.inflate(R.layout.camera_fragment, container, false);
-        previewHolder = createCenteredCameraPreview(getActivity());
-        parentLayout.addView(previewHolder, 0);
+        parentLayout = (RelativeLayout)inflater.inflate(R.layout.camera_fragment, container, false);
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "Requesting Camera Permissions from onCreateView ");
+            requestCameraPermission();
+        } else {
+            previewHolder = createCenteredCameraPreview(getActivity());
+            parentLayout.addView(previewHolder, 0);
+        }
         return parentLayout;
     }
 
@@ -322,11 +329,20 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Camera permission has been granted, preview can be displayed
                 Log.i(TAG, "CAMERA permission has now been granted. Showing preview.");
-                openCamera();
+                requestPermissionFollowUp();
             } else {
                 Log.i(TAG, "CAMERA permission was NOT granted.");
-
             }
+        }
+    }
+
+    private void requestPermissionFollowUp() {
+        Log.i(TAG, "requestPermissionFollowUp createCenteredCameraPreview");
+        if (parentLayout != null) {
+            previewHolder = createCenteredCameraPreview(getActivity());
+            parentLayout.addView(previewHolder, 0);
+        } else {
+            throw new AssertionError("parentLayout is NULL -- while it should not be");
         }
     }
 }

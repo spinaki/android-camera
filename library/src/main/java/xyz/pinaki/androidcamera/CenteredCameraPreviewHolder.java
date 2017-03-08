@@ -26,7 +26,7 @@ import java.util.List;
  */
 @SuppressWarnings("deprecation")
 /* package */ class CenteredCameraPreviewHolder extends ViewGroup implements SurfaceHolder.Callback {
-    private final String TAG = CameraFragment.class.getSimpleName();
+    private final String TAG = CenteredCameraPreviewHolder.class.getSimpleName();
     SurfaceView surfaceView;
     SurfaceHolder surfaceHolder;
     Size previewSize;
