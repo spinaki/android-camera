@@ -3,7 +3,7 @@ package xyz.pinaki.androidcamera.example;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import xyz.pinaki.androidcamera.CameraManager;
+import xyz.pinaki.android.camera.CameraManager;
 
 public class MainActivity extends AppCompatActivity {
     @Override

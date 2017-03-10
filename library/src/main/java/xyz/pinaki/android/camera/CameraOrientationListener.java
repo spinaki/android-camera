@@ -1,4 +1,4 @@
-package xyz.pinaki.androidcamera;
+package xyz.pinaki.android.camera;
 
 /**
  * Created by pinaki on 8/16/16.

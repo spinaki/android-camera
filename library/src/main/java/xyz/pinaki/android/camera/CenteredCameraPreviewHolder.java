@@ -1,4 +1,4 @@
-package xyz.pinaki.androidcamera;
+package xyz.pinaki.android.camera;
 
 /**
  * Created by pinaki on 9/14/16.
@@ -26,7 +26,7 @@ import java.util.List;
  */
 @SuppressWarnings("deprecation")
 /* package */ class CenteredCameraPreviewHolder extends ViewGroup implements SurfaceHolder.Callback {
-    private final String TAG = CameraFragment.class.getSimpleName();
+    private final String TAG = CenteredCameraPreviewHolder.class.getSimpleName();
     SurfaceView surfaceView;
     SurfaceHolder surfaceHolder;
     Size previewSize;

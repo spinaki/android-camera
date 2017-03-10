@@ -1,4 +1,4 @@
-package xyz.pinaki.androidcamera;
+package xyz.pinaki.android.camera;
 
 import android.Manifest;
 import android.app.Activity;
@@ -23,6 +23,8 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import java.util.List;
+
+import xyz.pinaki.androidcamera.R;
 
 /**
  * Created by pinaki.

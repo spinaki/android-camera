@@ -1,4 +1,4 @@
-package xyz.pinaki.androidcamera;
+package xyz.pinaki.android.camera;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
