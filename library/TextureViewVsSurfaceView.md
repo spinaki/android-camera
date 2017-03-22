@@ -36,9 +36,15 @@ Used in camera `camera.setPreviewTexture`
 **TextureView**
 TextureView combines a View with a SurfaceTexture. TextureView wraps a SurfaceTexture and takes responsibility for responding to callbacks and acquiring new buffers. When drawing, TextureView uses the contents of the most recently received buffer as its data source, rendering wherever and however the View state indicates it should.
 
+A TextureView can be used to display a content stream. Such a content stream can for instance be a video or an OpenGL scene. The content stream can come from the application's process as well as a remote process.
+
+TextureView can only be used in a hardware accelerated window. When rendered in software, TextureView will draw nothing.
+
+Unlike SurfaceView, TextureView does not create a separate window but behaves as a regular View. This key difference allows a TextureView to be moved, transformed, animated, etc. For instance, you can make a TextureView semi-translucent by calling myView.setAlpha(0.5f).
+
+Using a TextureView is simple: all you need to do is get its SurfaceTexture. The SurfaceTexture can then be used to render content. The following example demonstrates how to render the camera preview into a TextureView:
 **TextureView vs SurfaceView**
 
-SurfaceView or TextureView?
 SurfaceView and TextureView fill similar roles, but have very different implementations. To decide which is best requires an understanding of the trade-offs.
 Because TextureView is a proper citizen of the View hierarchy, it behaves like any other View, and can overlap or be overlapped by other elements. You can perform arbitrary transformations and retrieve the contents as a bitmap with simple API calls.
 
@@ -46,4 +52,22 @@ The main strike against TextureView is the performance of the composition step. 
 
 As noted earlier, DRM-protected video can be presented only on an overlay plane. Video players that support protected content must be implemented with SurfaceView.
 
-* Details on Texture and Surface [here](https://source.android.com/devices/graphics/arch-tv.html)
+**Detailed Comparison**
+
+Both SurfaceView and TextureView are inherited from android.view.View class. They can be drawn and rendered from a separate thread, which is the major difference from other views. The feature of drawing separately is employed by Crosswalk to improve rendering performance greatly by a dedicated GPU thread.
+
+SurfaceView provides a dedicated drawing surface embedded inside of a view hierarchy. You can control the format of this surface and, if you like, its size; the SurfaceView takes care of placing the surface at the correct location on the screen. Its behavior is more or less similar as an onscreen Window on a traditional desktop system, for example, XWindow on X11 system which can be frameless and embedded inside another XWindow.
+The followings are two limitations of SurfaceView:
+
+* You can not be animated, transformed and scaled;
+* You can not overlay two SurfaceView.
+
+TextureView looks like a general View. You can animate, transform and scale it, just like a TextView.
+TextureView can only be used in a hardware accelerated window. However, TextureView will consume much more memory than SurfaceView, and also may have a 1~3 frame latency.
+
+**Further Reading**
+* Details on Texture and Surface [Android Docs](https://source.android.com/devices/graphics/arch-tv.html)
+* TextureView Demo with old camera API [here](https://github.com/dalinaum/TextureViewDemo/blob/master/src/kr/gdg/android/textureview/CameraActivity.java)
+* Great [comparison](https://github.com/crosswalk-project/crosswalk-website/wiki/Android-SurfaceView-vs-TextureView)
+* Grafika Test App and [Code](https://github.com/google/grafika)
+* Google blog intro-ing [TextureView](https://android-developers.googleblog.com/2011/11/android-40-graphics-and-animations.html)
