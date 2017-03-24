@@ -11,6 +11,8 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -49,6 +51,7 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
     private boolean shouldCreateLowresImage = true;
     CenteredCameraPreviewHolder previewHolder;
     RelativeLayout parentLayout;
+    private CameraHandlerThread cameraHandlerThread;
 
     public CameraFragment() {
         // empty constructor
@@ -121,8 +124,9 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
         orientationListener.enable();
     }
 
-    private boolean openCamera() {
+    private void openCamera() {
         Log.i(TAG, "openCamera");
+        Log.i(TAG, "openCamera invoked main thread: " + Thread.currentThread().getId());
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "Requesting Camera Permissions");
@@ -134,18 +138,32 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
                     if (camera != null) {
                         stopAndRelease();
                     }
-                    camera = Camera.open(cameraId);
-                    previewHolder.setCamera(camera, cameraId);
-                    return true;
+                    CameraCallback callback = new CameraCallback() {
+                        @Override
+                        public void onPictureTaken(Bitmap bitmap) {
+
+                        }
+
+                        @Override
+                        public void onCameraOpen(Camera c) {
+                            Log.i(TAG, "in camopen thread : " + Thread.currentThread().getId());
+                            camera = c;
+                            previewHolder = createCenteredCameraPreview(getActivity());
+                            parentLayout.addView(previewHolder, 0);
+                            previewHolder.setCamera(camera, cameraId);
+                        }
+                    };
+                    Handler uiHandler = new Handler(Looper.getMainLooper());
+                    cameraHandlerThread = new CameraHandlerThread(uiHandler, callback);
+                    cameraHandlerThread.start();
+                    cameraHandlerThread.openCamera();
                 } catch (RuntimeException exception) {
                     Log.i(TAG, "Cannot open camera with id " + cameraId, exception);
-                    return false;
                 }
             } else {
                 Log.i(TAG, "Camera Not Present");
             }
         }
-        return false;
     }
 
     private void stopAndRelease() {
@@ -165,6 +183,9 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
         super.onPause();
         stopAndRelease();
         orientationListener.disable();
+        if (cameraHandlerThread != null) {
+            cameraHandlerThread.quit();
+        }
     }
 
     @Override
@@ -190,9 +211,6 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
                 != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "Requesting Camera Permissions from onCreateView ");
             requestCameraPermission();
-        } else {
-            previewHolder = createCenteredCameraPreview(getActivity());
-            parentLayout.addView(previewHolder, 0);
         }
         return parentLayout;
     }
@@ -213,6 +231,11 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
             public void onPictureTaken(Bitmap bitmap) {
                 previewContainer.setVisibility(View.VISIBLE);
                 previewImage.setImageBitmap(bitmap);
+            }
+
+            @Override
+            public void onCameraOpen(Camera camera) {
+
             }
         });
         final ImageView previewCloseButton = (ImageView) view.findViewById(R.id.preview_close_icon);
@@ -340,12 +363,6 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
 
     private void requestPermissionFollowUp() {
         Log.i(TAG, "requestPermissionFollowUp createCenteredCameraPreview");
-        if (parentLayout != null) {
-            previewHolder = createCenteredCameraPreview(getActivity());
-            parentLayout.addView(previewHolder, 0);
-        } else {
-            throw new AssertionError("parentLayout is NULL -- while it should not be");
-        }
     }
 }
 
