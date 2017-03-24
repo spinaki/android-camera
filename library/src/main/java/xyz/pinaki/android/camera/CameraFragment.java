@@ -225,7 +225,7 @@ public class CameraFragment extends Fragment {
         });
         final View previewContainer = view.findViewById(R.id.preview_container);
         final ImageView previewImage = (ImageView) view.findViewById(R.id.preview_image);
-        setCameraCallback(new CameraCallback() {
+        this.cameraCallback = new CameraCallback() {
             @Override
             public void onPictureTaken(Bitmap bitmap) {
                 Log.i(TAG, "in onPictureTaken: " + Thread.currentThread().getId());
@@ -233,12 +233,11 @@ public class CameraFragment extends Fragment {
                 previewImage.setImageBitmap(bitmap);
                 previewHolder.startCameraPreview();
             }
-
             @Override
             public void onCameraOpen(Camera camera) {
 
             }
-        });
+        };
         final ImageView previewCloseButton = (ImageView) view.findViewById(R.id.preview_close_icon);
         previewCloseButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -306,10 +305,6 @@ public class CameraFragment extends Fragment {
             }
         }
         return false;
-    }
-
-    protected void setCameraCallback(CameraCallback cameraCallback) {
-        this.cameraCallback = cameraCallback;
     }
 
     protected void setFlashMode(CameraFlashMode mode) {
