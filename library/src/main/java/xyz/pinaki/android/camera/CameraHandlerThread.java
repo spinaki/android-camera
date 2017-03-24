@@ -1,8 +1,10 @@
 package xyz.pinaki.android.camera;
 
+import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.Looper;
 import android.util.Log;
 
 /**
@@ -12,17 +14,13 @@ import android.util.Log;
 /* package */ class CameraHandlerThread extends HandlerThread {
     private static final String TAG = CameraHandlerThread.class.getSimpleName();
     private Handler workerHandler = null;
-    private final Handler uiHandler; // responseHandler
-    private final CameraCallback cameraCallback;
 
-    /* package */ CameraHandlerThread(Handler responseHandler, CameraCallback callback) {
+    /* package */ CameraHandlerThread() {
         super(TAG);
-        uiHandler = responseHandler;
-        cameraCallback = callback;
     }
 
     //
-    /* package */ void openCamera() {
+    /* package */ void openCamera(final Handler uiHandler, final CameraCallback cameraCallback) {
         if (workerHandler == null) {
             workerHandler = new Handler(getLooper());
         }
@@ -43,5 +41,32 @@ import android.util.Log;
                 }
             }
         });
+    }
+
+    /* package*/ void capturePhoto(final Camera camera, final CameraCallback cameraCallback) {
+        workerHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Log.i(TAG, "capturePhoto background thread: " + Thread.currentThread().getId());
+                camera.takePicture(null, null, new Camera.PictureCallback() {
+                    @Override
+                    public void onPictureTaken(byte[] bytes, Camera camera) {
+                        Log.i(TAG, "onPictureTaken background thread: " + Thread.currentThread().getId());
+                        final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(bytes, 800);
+                        Handler uiHandler = new Handler(Looper.getMainLooper());
+                        uiHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.i(TAG, "uiHandler run : " + Thread.currentThread().getId());
+                                if (cameraCallback != null) {
+                                    cameraCallback.onPictureTaken(bitmap);
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
     }
 }

@@ -45,13 +45,13 @@ import java.util.List;
         super(context);
     }
 
-    public CenteredCameraPreviewHolder(Activity activity) {
+    /* package */ CenteredCameraPreviewHolder(Activity activity) {
         super(activity);
         this.activity = activity;
-        addSurfaceView();
+//        addSurfaceView();
     }
 
-    private void addSurfaceView() {
+    /* package */ void addSurfaceView() {
         Log.i(TAG, "addSurfaceView");
         if (surfaceView != null) {
             removeView(surfaceView);
