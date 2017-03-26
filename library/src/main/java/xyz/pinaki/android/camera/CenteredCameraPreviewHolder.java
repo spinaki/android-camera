@@ -175,6 +175,7 @@ import java.util.List;
                     parameters.setPictureSize(pictureSize.width, pictureSize.height);
                 }
                 camera.setParameters(parameters);
+                // this is necessary  for the preview to have correct orientation / aspect ratio.
                 configureOrientationParams();
                 requestLayout();
                 startCameraPreview();
@@ -228,7 +229,7 @@ import java.util.List;
         return optimalSize;
     }
 
-    /* package */ synchronized void startCameraPreview() {
+    /* package */ void startCameraPreview() {
         Log.i(TAG, "startCameraPreview");
         if (camera != null ) {
             Log.i(TAG, "startCameraPreview in If Block");
@@ -280,7 +281,7 @@ import java.util.List;
         this.displayOrientation = displayOrientation;
         this.layoutOrientation  = degrees;
 //        Log.i(TAG, "cameraInfo.orientation: " + cameraInfo.orientation + ", getDefaultDisplay.degrees: " + degrees);
-//        Log.i(TAG, "configureOrientationParams, displayOrientation: " + displayOrientation);
+        Log.i(TAG, "displayOrientation: " + displayOrientation + ", layoutOrientation:" + layoutOrientation);
         camera.setDisplayOrientation(displayOrientation);
     }
 

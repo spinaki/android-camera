@@ -28,16 +28,21 @@ import android.util.Log;
             @Override
             public void run() {
                 Log.i(TAG, "workerHandler run thread: " + Thread.currentThread().getId());
-                final Camera camera = Camera.open(0);
-                Log.i(TAG, "opened cam in background");
-                if (uiHandler != null) {
-                    uiHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.i(TAG, "onCameraOpen in ui");
-                            cameraCallback.onCameraOpen(camera);
-                        }
-                    });
+                try {
+                    final Camera camera = Camera.open(0);
+                    Log.i(TAG, "opened cam in background");
+                    if (uiHandler != null) {
+                        uiHandler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                Log.i(TAG, "onCameraOpen in ui");
+                                cameraCallback.onCameraOpen(camera);
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    Log.i(TAG, "Failed to Open Camera");
+                    e.printStackTrace();
                 }
             }
         });

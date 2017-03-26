@@ -16,8 +16,8 @@ import android.view.OrientationEventListener;
  * (0, 90, 180, 270).
  */
 /* package */ class CameraOrientationListener extends OrientationEventListener {
-    /* package */ int currentNormalizedOrientation;
-    /* package */ int rememberedNormalizedOrientation;
+    private int currentNormalizedOrientation = 0;
+    private int rememberedNormalizedOrientation = 0;
     private CameraFragment cameraFragment;
 
     /* package */ CameraOrientationListener(Context context) {

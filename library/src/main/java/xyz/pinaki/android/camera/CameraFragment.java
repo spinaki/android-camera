@@ -7,6 +7,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
@@ -43,6 +44,8 @@ public class CameraFragment extends Fragment {
     private static final String TAG = CameraFragment.class.getSimpleName();
     private static final int REQUEST_CAMERA = 0;
     private Camera camera = null;
+    // necessary for correctly rotating the captured bitmap so that exported image / view has the correct orientation--
+    // this is especially if the phone is in landscape mode while capturing.
     private CameraOrientationListener orientationListener;
     private CameraCallback cameraCallback = null;
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
@@ -229,9 +232,27 @@ public class CameraFragment extends Fragment {
             @Override
             public void onPictureTaken(Bitmap bitmap) {
                 Log.i(TAG, "in onPictureTaken: " + Thread.currentThread().getId());
+                // CONVERT THE BITMAP
+                Matrix matrix = new Matrix();
+//            if (cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+//                float[] mirrorY = {-1, 0, 0, 0, 1, 0, 0, 0, 1};
+//                Matrix matrixMirrorY = new Matrix();
+//                matrixMirrorY.setValues(mirrorY);
+//                matrix.postConcat(matrixMirrorY);
+//            }
+                // this is necessary for fixing the orientation of the captured bitmap
+                int rotation = previewHolder.getDisplayOrientation();
+                // following is resp for orientation in landscape mode. without this landscape will be saved as
+                // portraits in the bitmap / jpeg
+                rotation = (rotation + orientationListener.getRememberedOrientation() + previewHolder.getLayoutOrientation()) % 360;
+                matrix.postRotate(rotation);
+//              Log.i(TAG, "createBitmap: width: " + bitmap.getWidth() + ", height: " + bitmap.getHeight());
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
                 previewContainer.setVisibility(View.VISIBLE);
                 previewImage.setImageBitmap(bitmap);
                 previewHolder.startCameraPreview();
+                BitmapUtils.compressedImageFromBitmap(bitmap, "test1" + ".jpg", getContext());
+                Log.i(TAG, "saved image");
             }
             @Override
             public void onCameraOpen(Camera camera) {
