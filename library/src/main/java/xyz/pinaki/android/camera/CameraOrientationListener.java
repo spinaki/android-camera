@@ -18,22 +18,15 @@ import android.view.OrientationEventListener;
 /* package */ class CameraOrientationListener extends OrientationEventListener {
     private int currentNormalizedOrientation = 0;
     private int rememberedNormalizedOrientation = 0;
-    private CameraFragment cameraFragment;
 
     /* package */ CameraOrientationListener(Context context) {
         super(context, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
-    /* package */ void setCamera1Fragment (CameraFragment camera1Fragment) {
-        this.cameraFragment = camera1Fragment;
-    }
     @Override
     public void onOrientationChanged(int orientation) {
         if (orientation != ORIENTATION_UNKNOWN) {
             currentNormalizedOrientation = normalize(orientation);
-        }
-        if (this.cameraFragment != null ) {
-            cameraFragment.rotateUI(currentNormalizedOrientation);
         }
     }
 

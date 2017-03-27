@@ -201,7 +201,6 @@ public class CameraFragment extends Fragment {
             getActivity().getActionBar().hide();
         }
         orientationListener = new CameraOrientationListener(getActivity());
-        orientationListener.setCamera1Fragment(this);
     }
 
 
@@ -235,6 +234,7 @@ public class CameraFragment extends Fragment {
                 // CONVERT THE BITMAP
                 Matrix matrix = new Matrix();
 //            if (cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+                // Why is this necessary ?
 //                float[] mirrorY = {-1, 0, 0, 0, 1, 0, 0, 0, 1};
 //                Matrix matrixMirrorY = new Matrix();
 //                matrixMirrorY.setValues(mirrorY);
@@ -245,13 +245,14 @@ public class CameraFragment extends Fragment {
                 // following is resp for orientation in landscape mode. without this landscape will be saved as
                 // portraits in the bitmap / jpeg
                 rotation = (rotation + orientationListener.getRememberedOrientation() + previewHolder.getLayoutOrientation()) % 360;
+                // listener
                 matrix.postRotate(rotation);
 //              Log.i(TAG, "createBitmap: width: " + bitmap.getWidth() + ", height: " + bitmap.getHeight());
                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
                 previewContainer.setVisibility(View.VISIBLE);
                 previewImage.setImageBitmap(bitmap);
                 previewHolder.startCameraPreview();
-                BitmapUtils.compressedImageFromBitmap(bitmap, "test1" + ".jpg", getContext());
+                BitmapUtils.compressedImageFromBitmap(bitmap, "test1" + ".jpg");
                 Log.i(TAG, "saved image");
             }
             @Override
@@ -272,11 +273,6 @@ public class CameraFragment extends Fragment {
     public void onDestroyView() {
         Log.i(TAG, "onDestroyView");
         super.onDestroyView();
-    }
-
-    // TODO: this should not be here -- bad design.
-    protected void rotateUI(int angle) {
-        // do nothing. do in child class.
     }
 
     private CenteredCameraPreviewHolder createCenteredCameraPreview(Activity activity) {
