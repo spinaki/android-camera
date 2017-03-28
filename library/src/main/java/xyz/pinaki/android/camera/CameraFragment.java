@@ -8,8 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.hardware.Camera;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -53,7 +51,7 @@ public class CameraFragment extends Fragment {
     ImageView previewImage;
     private CameraHandlerThread cameraHandlerThread;
 
-    private final CameraCallback cameraCallback1 = new CameraCallback() {
+    private final CameraCallback cameraCallback = new CameraCallback() {
         @Override
         public void onPictureTaken(Bitmap bitmap) {
             cameraHandlerThread.processBitmap(cameraId, bitmap, previewHolder, orientationListener, this);
@@ -101,7 +99,7 @@ public class CameraFragment extends Fragment {
             orientationListener.rememberOrientation();
             if (previewHolder.getSafeToTakePicture()) {
                 previewHolder.setSafeToTakePicture(false);
-                cameraHandlerThread.capturePhoto(camera, cameraCallback1);
+                cameraHandlerThread.capturePhoto(camera, cameraCallback);
             }
         } else {
             Log.i(TAG, "previewHolder is NULL");
@@ -157,8 +155,7 @@ public class CameraFragment extends Fragment {
                     if (camera != null) {
                         stopAndRelease();
                     }
-                    Handler uiHandler = new Handler(Looper.getMainLooper());
-                    cameraHandlerThread.openCamera(cameraId, uiHandler, cameraCallback1);
+                    cameraHandlerThread.openCamera(cameraId, cameraCallback);
                 } catch (RuntimeException exception) {
                     Log.i(TAG, "Cannot open camera with id " + cameraId, exception);
                 }
