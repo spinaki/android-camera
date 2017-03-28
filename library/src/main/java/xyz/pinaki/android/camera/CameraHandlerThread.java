@@ -20,7 +20,7 @@ import android.util.Log;
     }
 
     //
-    /* package */ void openCamera(final Handler uiHandler, final CameraCallback cameraCallback) {
+    /* package */ void openCamera(final int cameraId, final Handler uiHandler, final CameraCallback cameraCallback) {
         if (workerHandler == null) {
             workerHandler = new Handler(getLooper());
         }
@@ -29,7 +29,7 @@ import android.util.Log;
             public void run() {
                 Log.i(TAG, "workerHandler run thread: " + Thread.currentThread().getId());
                 try {
-                    final Camera camera = Camera.open(0);
+                    final Camera camera = Camera.open(cameraId);
                     Log.i(TAG, "opened cam in background");
                     if (uiHandler != null) {
                         uiHandler.post(new Runnable() {
@@ -52,17 +52,14 @@ import android.util.Log;
         workerHandler.post(new Runnable() {
             @Override
             public void run() {
-                Log.i(TAG, "capturePhoto background thread: " + Thread.currentThread().getId());
                 camera.takePicture(null, null, new Camera.PictureCallback() {
                     @Override
                     public void onPictureTaken(byte[] bytes, Camera camera) {
-                        Log.i(TAG, "onPictureTaken background thread: " + Thread.currentThread().getId());
                         final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(bytes, 800);
                         Handler uiHandler = new Handler(Looper.getMainLooper());
                         uiHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                Log.i(TAG, "uiHandler run : " + Thread.currentThread().getId());
                                 if (cameraCallback != null) {
                                     cameraCallback.onPictureTaken(bitmap);
                                 }

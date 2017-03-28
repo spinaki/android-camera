@@ -3,7 +3,6 @@ package xyz.pinaki.android.camera;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -118,9 +117,7 @@ public class CameraFragment extends Fragment {
 
     @Override
     public void onResume() {
-        Log.i(TAG, "onResume");
         super.onResume();
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         cameraHandlerThread = new CameraHandlerThread();
         cameraHandlerThread.start();
         openCamera();
@@ -128,14 +125,10 @@ public class CameraFragment extends Fragment {
     }
 
     private void openCamera() {
-        Log.i(TAG, "openCamera");
-        Log.i(TAG, "openCamera invoked main thread: " + Thread.currentThread().getId());
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "Requesting Camera Permissions");
             requestCameraPermission();
         } else {
-            Log.i(TAG, "Got Permissions in OpenCam");
             if (checkCameraHardware(getContext())) {
                 try {
                     if (camera != null) {
@@ -149,7 +142,6 @@ public class CameraFragment extends Fragment {
 
                         @Override
                         public void onCameraOpen(Camera c) {
-                            Log.i(TAG, "in camopen thread : " + Thread.currentThread().getId());
                             camera = c;
                             previewHolder = createCenteredCameraPreview(getActivity());
                             previewHolder.addSurfaceView();
@@ -158,7 +150,7 @@ public class CameraFragment extends Fragment {
                         }
                     };
                     Handler uiHandler = new Handler(Looper.getMainLooper());
-                    cameraHandlerThread.openCamera(uiHandler, callback);
+                    cameraHandlerThread.openCamera(cameraId, uiHandler, callback);
                 } catch (RuntimeException exception) {
                     Log.i(TAG, "Cannot open camera with id " + cameraId, exception);
                 }
@@ -230,20 +222,23 @@ public class CameraFragment extends Fragment {
         this.cameraCallback = new CameraCallback() {
             @Override
             public void onPictureTaken(Bitmap bitmap) {
-                Log.i(TAG, "in onPictureTaken: " + Thread.currentThread().getId());
                 // CONVERT THE BITMAP
                 Matrix matrix = new Matrix();
-//            if (cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                // Why is this necessary ?
-//                float[] mirrorY = {-1, 0, 0, 0, 1, 0, 0, 0, 1};
-//                Matrix matrixMirrorY = new Matrix();
-//                matrixMirrorY.setValues(mirrorY);
-//                matrix.postConcat(matrixMirrorY);
-//            }
+                if (cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+//                 Why is this necessary ?
+//                    http://stackoverflow.com/questions/8332312/android-front-and-back-camera-orientation-landscape/8347956
+                    // without this front facnig camera image is inverted. this basically inverts the x coordinates
+                    // across the Y axis
+                    float[] mirrorY = {-1, 0, 0, 0, 1, 0, 0, 0, 1};
+                    Matrix matrixMirrorY = new Matrix();
+                    matrixMirrorY.setValues(mirrorY);
+                    matrix.postConcat(matrixMirrorY);
+                }
                 // this is necessary for fixing the orientation of the captured bitmap
                 int rotation = previewHolder.getDisplayOrientation();
-                // following is resp for orientation in landscape mode. without this landscape will be saved as
-                // portraits in the bitmap / jpeg
+//                // following is resp for orientation in landscape mode. without this landscape will be saved as
+//                // portraits in the bitmap / jpeg
+//                Log.i(TAG, "in onPictureTaken orientationListener : " + orientationListener.getRememberedOrientation());
                 rotation = (rotation + orientationListener.getRememberedOrientation() + previewHolder.getLayoutOrientation()) % 360;
                 // listener
                 matrix.postRotate(rotation);
@@ -252,8 +247,8 @@ public class CameraFragment extends Fragment {
                 previewContainer.setVisibility(View.VISIBLE);
                 previewImage.setImageBitmap(bitmap);
                 previewHolder.startCameraPreview();
-                BitmapUtils.compressedImageFromBitmap(bitmap, "test1" + ".jpg");
-                Log.i(TAG, "saved image");
+//                BitmapUtils.compressedImageFromBitmap(bitmap, "test1" + ".jpg");
+//                Log.i(TAG, "saved image");
             }
             @Override
             public void onCameraOpen(Camera camera) {

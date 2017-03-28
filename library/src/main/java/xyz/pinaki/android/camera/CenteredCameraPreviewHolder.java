@@ -252,6 +252,12 @@ import java.util.List;
     private void configureOrientationParams() {
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         Camera.getCameraInfo(cameraId, cameraInfo);
+// Returns the rotation of the screen from its "natural" orientation. For example,
+// if a device has a naturally tall screen, and the user has turned it on its side to go into a landscape orientation,
+// the value returned here may be either Surface.ROTATION_90 or Surface.ROTATION_270 depending on the direction it was
+// turned. The angle is the rotation of the drawn graphics on the screen, which is the opposite direction of the
+// physical rotation of the device. For example, if the device is rotated 90 degrees counter-clockwise, to compensate
+// rendering will be rotated by 90 degrees clockwise and thus the returned value here will be Surface.ROTATION_90.
         int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
         int degrees  = 0;
         switch (rotation) {
