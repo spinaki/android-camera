@@ -6,4 +6,5 @@ import android.hardware.Camera;
 /* package */ interface CameraCallback {
     void onPictureTaken(final Bitmap bitmap);
     void onCameraOpen(Camera camera);
+    void onBitmapProcessed(Bitmap bitmap);
 }

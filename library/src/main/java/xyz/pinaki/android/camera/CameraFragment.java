@@ -6,7 +6,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.os.Handler;
@@ -47,7 +46,7 @@ public class CameraFragment extends Fragment {
     // this is especially if the phone is in landscape mode while capturing.
     private CameraOrientationListener orientationListener;
     private CameraCallback cameraCallback = null;
-    private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+    private int cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
     private boolean shouldCreateLowresImage = true;
     CenteredCameraPreviewHolder previewHolder;
     RelativeLayout parentLayout;
@@ -148,6 +147,11 @@ public class CameraFragment extends Fragment {
                             parentLayout.addView(previewHolder, 0);
                             previewHolder.setCamera(camera, cameraId);
                         }
+
+                        @Override
+                        public void onBitmapProcessed(Bitmap bitmap) {
+
+                        }
                     };
                     Handler uiHandler = new Handler(Looper.getMainLooper());
                     cameraHandlerThread.openCamera(cameraId, uiHandler, callback);
@@ -223,35 +227,33 @@ public class CameraFragment extends Fragment {
             @Override
             public void onPictureTaken(Bitmap bitmap) {
                 // CONVERT THE BITMAP
-                Matrix matrix = new Matrix();
-                if (cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-//                 Why is this necessary ?
-//                    http://stackoverflow.com/questions/8332312/android-front-and-back-camera-orientation-landscape/8347956
-                    // without this front facnig camera image is inverted. this basically inverts the x coordinates
-                    // across the Y axis
-                    float[] mirrorY = {-1, 0, 0, 0, 1, 0, 0, 0, 1};
-                    Matrix matrixMirrorY = new Matrix();
-                    matrixMirrorY.setValues(mirrorY);
-                    matrix.postConcat(matrixMirrorY);
-                }
-                // this is necessary for fixing the orientation of the captured bitmap
-                int rotation = previewHolder.getDisplayOrientation();
-//                // following is resp for orientation in landscape mode. without this landscape will be saved as
-//                // portraits in the bitmap / jpeg
-//                Log.i(TAG, "in onPictureTaken orientationListener : " + orientationListener.getRememberedOrientation());
-                rotation = (rotation + orientationListener.getRememberedOrientation() + previewHolder.getLayoutOrientation()) % 360;
-                // listener
-                matrix.postRotate(rotation);
-//              Log.i(TAG, "createBitmap: width: " + bitmap.getWidth() + ", height: " + bitmap.getHeight());
-                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
-                previewContainer.setVisibility(View.VISIBLE);
-                previewImage.setImageBitmap(bitmap);
-                previewHolder.startCameraPreview();
+                cameraHandlerThread.processBitmap(cameraId, bitmap, previewHolder, orientationListener, new CameraCallback() {
+                    @Override
+                    public void onPictureTaken(Bitmap bitmap) {
+
+                    }
+
+                    @Override
+                    public void onCameraOpen(Camera camera) {
+
+                    }
+
+                    @Override
+                    public void onBitmapProcessed(Bitmap bitmap) {
+                        previewContainer.setVisibility(View.VISIBLE);
+                        previewImage.setImageBitmap(bitmap);
+                        previewHolder.startCameraPreview();
+                    }
+                });
 //                BitmapUtils.compressedImageFromBitmap(bitmap, "test1" + ".jpg");
 //                Log.i(TAG, "saved image");
             }
             @Override
             public void onCameraOpen(Camera camera) {
+            }
+
+            @Override
+            public void onBitmapProcessed(Bitmap bitmap) {
 
             }
         };
