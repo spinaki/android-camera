@@ -45,12 +45,36 @@ public class CameraFragment extends Fragment {
     // necessary for correctly rotating the captured bitmap so that exported image / view has the correct orientation--
     // this is especially if the phone is in landscape mode while capturing.
     private CameraOrientationListener orientationListener;
-    private CameraCallback cameraCallback = null;
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
     private boolean shouldCreateLowresImage = true;
     CenteredCameraPreviewHolder previewHolder;
     RelativeLayout parentLayout;
+    View previewContainer;
+    ImageView previewImage;
     private CameraHandlerThread cameraHandlerThread;
+
+    private final CameraCallback cameraCallback1 = new CameraCallback() {
+        @Override
+        public void onPictureTaken(Bitmap bitmap) {
+            cameraHandlerThread.processBitmap(cameraId, bitmap, previewHolder, orientationListener, this);
+        }
+
+        @Override
+        public void onCameraOpen(Camera cam) {
+            camera = cam;
+            previewHolder = createCenteredCameraPreview(getActivity());
+            previewHolder.addSurfaceView();
+            parentLayout.addView(previewHolder, 0);
+            previewHolder.setCamera(camera, cameraId);
+        }
+
+        @Override
+        public void onBitmapProcessed(Bitmap bitmap) {
+            previewContainer.setVisibility(View.VISIBLE);
+            previewImage.setImageBitmap(bitmap);
+            previewHolder.startCameraPreview();
+        }
+    };
 
     public CameraFragment() {
         // empty constructor
@@ -77,7 +101,7 @@ public class CameraFragment extends Fragment {
             orientationListener.rememberOrientation();
             if (previewHolder.getSafeToTakePicture()) {
                 previewHolder.setSafeToTakePicture(false);
-                cameraHandlerThread.capturePhoto(camera, cameraCallback);
+                cameraHandlerThread.capturePhoto(camera, cameraCallback1);
             }
         } else {
             Log.i(TAG, "previewHolder is NULL");
@@ -133,28 +157,8 @@ public class CameraFragment extends Fragment {
                     if (camera != null) {
                         stopAndRelease();
                     }
-                    CameraCallback callback = new CameraCallback() {
-                        @Override
-                        public void onPictureTaken(Bitmap bitmap) {
-
-                        }
-
-                        @Override
-                        public void onCameraOpen(Camera c) {
-                            camera = c;
-                            previewHolder = createCenteredCameraPreview(getActivity());
-                            previewHolder.addSurfaceView();
-                            parentLayout.addView(previewHolder, 0);
-                            previewHolder.setCamera(camera, cameraId);
-                        }
-
-                        @Override
-                        public void onBitmapProcessed(Bitmap bitmap) {
-
-                        }
-                    };
                     Handler uiHandler = new Handler(Looper.getMainLooper());
-                    cameraHandlerThread.openCamera(cameraId, uiHandler, callback);
+                    cameraHandlerThread.openCamera(cameraId, uiHandler, cameraCallback1);
                 } catch (RuntimeException exception) {
                     Log.i(TAG, "Cannot open camera with id " + cameraId, exception);
                 }
@@ -221,42 +225,8 @@ public class CameraFragment extends Fragment {
                 takePicture();
             }
         });
-        final View previewContainer = view.findViewById(R.id.preview_container);
-        final ImageView previewImage = (ImageView) view.findViewById(R.id.preview_image);
-        this.cameraCallback = new CameraCallback() {
-            @Override
-            public void onPictureTaken(Bitmap bitmap) {
-                // CONVERT THE BITMAP
-                cameraHandlerThread.processBitmap(cameraId, bitmap, previewHolder, orientationListener, new CameraCallback() {
-                    @Override
-                    public void onPictureTaken(Bitmap bitmap) {
-
-                    }
-
-                    @Override
-                    public void onCameraOpen(Camera camera) {
-
-                    }
-
-                    @Override
-                    public void onBitmapProcessed(Bitmap bitmap) {
-                        previewContainer.setVisibility(View.VISIBLE);
-                        previewImage.setImageBitmap(bitmap);
-                        previewHolder.startCameraPreview();
-                    }
-                });
-//                BitmapUtils.compressedImageFromBitmap(bitmap, "test1" + ".jpg");
-//                Log.i(TAG, "saved image");
-            }
-            @Override
-            public void onCameraOpen(Camera camera) {
-            }
-
-            @Override
-            public void onBitmapProcessed(Bitmap bitmap) {
-
-            }
-        };
+        previewContainer = view.findViewById(R.id.preview_container);
+        previewImage = (ImageView) view.findViewById(R.id.preview_image);
         final ImageView previewCloseButton = (ImageView) view.findViewById(R.id.preview_close_icon);
         previewCloseButton.setOnClickListener(new View.OnClickListener() {
             @Override
