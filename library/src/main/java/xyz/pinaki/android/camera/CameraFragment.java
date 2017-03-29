@@ -42,7 +42,8 @@ public class CameraFragment extends Fragment {
     private Camera camera = null;
     // necessary for correctly rotating the captured bitmap so that exported image / view has the correct orientation--
     // this is especially if the phone is in landscape mode while capturing.
-    private CameraOrientationListener orientationListener;
+    private DeviceOrientationListener orientationListener;
+    private RotationEventListener rotationEventListener = new RotationEventListener();;
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
     private boolean shouldCreateLowresImage = true;
     CenteredCameraPreviewHolder previewHolder;
@@ -50,11 +51,10 @@ public class CameraFragment extends Fragment {
     View previewContainer;
     ImageView previewImage;
     private CameraHandlerThread cameraHandlerThread;
-
     private final CameraCallback cameraCallback = new CameraCallback() {
         @Override
         public void onPictureTaken(Bitmap bitmap) {
-            cameraHandlerThread.processBitmap(cameraId, bitmap, previewHolder, orientationListener, this);
+            cameraHandlerThread.processBitmap(cameraId, bitmap,  orientationListener, rotationEventListener, this);
         }
 
         @Override
@@ -197,7 +197,7 @@ public class CameraFragment extends Fragment {
         } else if ( getActivity() !=  null && getActivity().getActionBar() != null) {
             getActivity().getActionBar().hide();
         }
-        orientationListener = new CameraOrientationListener(getActivity());
+        orientationListener = new DeviceOrientationListener(getActivity());
     }
 
 
@@ -240,7 +240,7 @@ public class CameraFragment extends Fragment {
     }
 
     private CenteredCameraPreviewHolder createCenteredCameraPreview(Activity activity) {
-        CenteredCameraPreviewHolder previewHolder = new CenteredCameraPreviewHolder(activity);
+        CenteredCameraPreviewHolder previewHolder = new CenteredCameraPreviewHolder(activity, rotationEventListener);
         previewHolder.setBackgroundColor(Color.BLACK);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams
                 .MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);

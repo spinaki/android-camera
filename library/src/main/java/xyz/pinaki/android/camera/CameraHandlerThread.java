@@ -68,11 +68,21 @@ import android.util.Log;
         });
     }
 
-    void processBitmap(final int cameraId, final Bitmap bitmap, final CenteredCameraPreviewHolder previewHolder,
-                       final CameraOrientationListener orientationListener, final CameraCallback cameraCallback) {
+    void processBitmap(final int cameraId, final Bitmap bitmap, final DeviceOrientationListener orientationListener,
+                       final RotationEventListener rotationEventListener, final CameraCallback cameraCallback) {
         workerHandler.post(new Runnable() {
             @Override
             public void run() {
+                // rotating the bitmap without depending on the Camera.Parameters.getRotation attribute
+                //
+                // more details here: http://www.androidzeitgeist.com/2013/01/fixing-rotation-camera-picture.html
+                // https://developer.android.com/reference/android/hardware/Camera.Parameters.html#setRotation(int)
+
+                // The value from OrientationEventListener is relative to the natural orientation of the device.
+                // CameraInfo.orientation is the angle between camera orientation and natural device orientation.
+                // The sum of the two is the rotation angle for back-facing camera. The difference of the two is
+                // the rotation angle for front-facing camera. Note that the JPEG pictures of front-facing cameras
+                // are not mirrored as in preview display.
                 Matrix matrix = new Matrix();
                 if (cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
 //                 Why is this necessary ?
@@ -85,11 +95,12 @@ import android.util.Log;
                     matrix.postConcat(matrixMirrorY);
                 }
                 // this is necessary for fixing the orientation of the captured bitmap
-                int rotation = previewHolder.getDisplayOrientation();
+                int rotation = rotationEventListener.getCameraDisplayRotation();
 //                // following is resp for orientation in landscape mode. without this landscape will be saved as
 //                // portraits in the bitmap / jpeg
 //                Log.i(TAG, "in onPictureTaken orientationListener : " + orientationListener.getRememberedOrientation());
-                rotation = (rotation + orientationListener.getRememberedOrientation() + previewHolder.getLayoutOrientation()) % 360;
+                rotation = (rotation + orientationListener.getRememberedOrientation() +
+                        rotationEventListener.getDeviceDisplayRotation()) % 360;
                 matrix.postRotate(rotation);
                 final Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix,
                         false);
