@@ -1,6 +1,8 @@
 package xyz.pinaki.android.camera;
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
@@ -15,6 +17,7 @@ import android.util.Log;
 // singleton manager class
 public class CameraController {
     private static String TAG = CameraController.class.getSimpleName();
+    private final boolean shouldFixOrientation = true;
     private static class SingletonHolder {
         private static final CameraController INSTANCE = new CameraController();
     }
@@ -24,11 +27,21 @@ public class CameraController {
     public static CameraController getInstance() {
         return SingletonHolder.INSTANCE;
     }
+
     public void launch(AppCompatActivity activity, int containerID) {
         if (isCamera2Supported(activity)) {
             Log.i(TAG, "Camera2 Supported");
         } else {
             Log.i(TAG, "Camera2 NOT Supported");
+        }
+        if (shouldFixOrientation) {
+            int orientation = activity.getResources().getConfiguration().orientation;
+            if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+            }
+            else {
+                activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            }
         }
         activity.getSupportFragmentManager().beginTransaction().replace(
                 containerID, CameraFragment.newInstance(), "CameraFragment").commit();
