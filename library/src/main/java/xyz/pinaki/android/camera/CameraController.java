@@ -27,6 +27,7 @@ public class CameraController {
     public static CameraController getInstance() {
         return SingletonHolder.INSTANCE;
     }
+
     public void launch(AppCompatActivity activity, int containerID) {
         if (isCamera2Supported(activity)) {
             Log.i(TAG, "Camera2 Supported");

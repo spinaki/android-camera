@@ -23,6 +23,7 @@ import java.util.List;
 
 import xyz.pinaki.androidcamera.R;
 
+
 /**
  * Created by pinaki.
  * references:
@@ -222,6 +223,15 @@ public class CameraFragment extends Fragment {
                 takePicture();
             }
         });
+        View cameraSwitch = view.findViewById(R.id.switch_cam);
+        cameraSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                stopAndRelease();
+                switchCamera();
+            }
+        });
+
         previewContainer = view.findViewById(R.id.preview_container);
         previewImage = (ImageView) view.findViewById(R.id.preview_image);
         final ImageView previewCloseButton = (ImageView) view.findViewById(R.id.preview_close_icon);
@@ -248,23 +258,13 @@ public class CameraFragment extends Fragment {
         return previewHolder;
     }
 
-//    protected boolean switchCamera() {
-//        int id = (cameraId == Camera.CameraInfo.CAMERA_FACING_BACK ? Camera.CameraInfo.CAMERA_FACING_FRONT :
-//                Camera.CameraInfo.CAMERA_FACING_BACK);
-//        return switchCamera(id);
-//    }
-
-//    protected boolean switchCamera(int cameraId) {
-//        if (this.cameraId == cameraId) {
-//            return true;
-//        }
-//        this.cameraId = cameraId;
-//        parentLayout.removeView(previewHolder);
-//        previewHolder = createCenteredCameraPreview(getActivity());
-//        // adding child at an index 0
-//        parentLayout.addView(previewHolder, 0);
-//        return openCamera();
-//    }
+    /* package */ void switchCamera() {
+        cameraId = (cameraId == Camera.CameraInfo.CAMERA_FACING_BACK) ? Camera.CameraInfo.CAMERA_FACING_FRONT :
+                Camera.CameraInfo.CAMERA_FACING_BACK;
+        Log.i(TAG, "switching to camera: " + cameraId);
+        parentLayout.removeView(previewHolder);
+        openCamera();
+    }
 
 //    protected boolean isFrontFacingCamera() {
 //        if (cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
@@ -330,15 +330,11 @@ public class CameraFragment extends Fragment {
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Camera permission has been granted, preview can be displayed
                 Log.i(TAG, "CAMERA permission has now been granted. Showing preview.");
-                requestPermissionFollowUp();
+                // requestPermissionFollowUp();
             } else {
                 Log.i(TAG, "CAMERA permission was NOT granted.");
             }
         }
-    }
-
-    private void requestPermissionFollowUp() {
-        Log.i(TAG, "requestPermissionFollowUp createCenteredCameraPreview");
     }
 }
 
