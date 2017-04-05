@@ -1,0 +1,151 @@
+package xyz.pinaki.android.camera;
+
+import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Surface;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+
+import java.util.Arrays;
+import java.util.List;
+
+import xyz.pinaki.androidcamera.R;
+
+/**
+ * Created by pinaki on 3/29/17.
+ */
+@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+public class Camera2Fragment extends Fragment {
+    private static final String TAG = Camera2Fragment.class.getSimpleName();
+    CameraHandlerThread cameraHandlerThread;
+    Handler cameraHandler;
+    private CameraDevice camera;
+    CenteredCameraPreviewHolder previewHolder;
+    RelativeLayout parentLayout;
+    private RotationEventListener rotationEventListener = new RotationEventListener();
+    View previewContainer;
+    ImageView previewImage;
+
+    public Camera2Fragment() {
+        // empty constructor
+    }
+
+    /* package */ static Camera2Fragment newInstance() {
+        return new Camera2Fragment();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        Log.i(TAG, "onCreateView");
+        parentLayout = (RelativeLayout)inflater.inflate(R.layout.camera_fragment, container, false);
+//        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
+//                != PackageManager.PERMISSION_GRANTED) {
+//            Log.i(TAG, "Requesting Camera Permissions from onCreateView ");
+//            requestCameraPermission();
+//        }
+        return parentLayout;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        cameraHandlerThread = new CameraHandlerThread();
+        cameraHandlerThread.start();
+        cameraHandler = new Handler(cameraHandlerThread.getLooper());
+        openCamera();
+    }
+
+
+    private void openCamera() {
+        CameraManager manager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
+        try {
+            for (String cameraId : manager.getCameraIdList()) {
+                CameraCharacteristics characteristics
+                        = manager.getCameraCharacteristics(cameraId);
+
+                // We don't use a front facing camera in this sample.
+                Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
+                if (facing != null && facing == CameraCharacteristics.LENS_FACING_FRONT) {
+                    continue;
+                }
+                // add permissions
+                // check if this is allowed.
+                if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
+                        != PackageManager.PERMISSION_GRANTED) {
+//                    requestCameraPermission();
+                } else {
+                    manager.openCamera(cameraId, mStateCallback, cameraHandler);
+                }
+                return;
+            }
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private final CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
+
+        @Override
+        public void onOpened(@NonNull CameraDevice cameraDevice) {
+            // This method is called when the camera is opened.  We start camera preview here.
+//            mCameraOpenCloseLock.release();
+            camera = cameraDevice;
+//            createCameraPreviewSession();
+            // create the surfaceView
+            previewHolder = createCenteredCameraPreview(getActivity());
+            previewHolder.addSurfaceView();
+            parentLayout.addView(previewHolder, 0);
+//            previewHolder.setCamera(camera, cameraId);
+
+            List<Surface> outputs = Arrays.asList(previewHolder.getSurfaceView().getHolder().getSurface());
+//            camera.createCaptureSession(outputs, mCaptureSessionListener, mBackgroundHandler);
+        }
+
+        private CenteredCameraPreviewHolder createCenteredCameraPreview(Activity activity) {
+            CenteredCameraPreviewHolder previewHolder = new CenteredCameraPreviewHolder(activity, rotationEventListener);
+            previewHolder.setBackgroundColor(Color.BLACK);
+            RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams
+                    .MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            previewHolder.setLayoutParams(layoutParams);
+            return previewHolder;
+        }
+
+        @Override
+        public void onDisconnected(@NonNull CameraDevice cameraDevice) {
+//            mCameraOpenCloseLock.release();
+            cameraDevice.close();
+            camera = null;
+        }
+
+        @Override
+        public void onError(@NonNull CameraDevice cameraDevice, int error) {
+//            mCameraOpenCloseLock.release();
+            cameraDevice.close();
+            camera = null;
+            Activity activity = getActivity();
+            if (null != activity) {
+                activity.finish();
+            }
+        }
+
+    };
+
+}

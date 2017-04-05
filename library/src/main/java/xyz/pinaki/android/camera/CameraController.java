@@ -8,6 +8,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
@@ -28,12 +29,8 @@ public class CameraController {
         return SingletonHolder.INSTANCE;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void launch(AppCompatActivity activity, int containerID) {
-        if (isCamera2Supported(activity)) {
-            Log.i(TAG, "Camera2 Supported");
-        } else {
-            Log.i(TAG, "Camera2 NOT Supported");
-        }
         if (shouldFixOrientation) {
             int orientation = activity.getResources().getConfiguration().orientation;
             if (orientation == Configuration.ORIENTATION_PORTRAIT) {
@@ -43,8 +40,16 @@ public class CameraController {
                 activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             }
         }
-        activity.getSupportFragmentManager().beginTransaction().replace(
-                containerID, CameraFragment.newInstance(), "CameraFragment").commit();
+        if (isCamera2Supported(activity)) {
+            Log.i(TAG, "Camera2 Supported");
+            activity.getSupportFragmentManager().beginTransaction().replace(
+                    containerID, Camera2FragmentNew.newInstance(), "Camera2Fragment").commit();
+        } else {
+            Log.i(TAG, "Camera2 NOT Supported");
+            activity.getSupportFragmentManager().beginTransaction().replace(
+                    containerID, CameraFragment.newInstance(), "Camera1Fragment").commit();
+        }
+
     }
 
 

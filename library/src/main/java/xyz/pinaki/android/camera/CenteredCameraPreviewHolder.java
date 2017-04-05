@@ -73,6 +73,10 @@ import java.util.List;
         this.cameraId = cameraId;
     }
 
+    SurfaceView getSurfaceView() {
+        return surfaceView;
+    }
+
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         // We purposely disregard child measurements because act as a

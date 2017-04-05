@@ -79,7 +79,7 @@ public class CameraFragment extends Fragment {
         // empty constructor
     }
 
-    public static CameraFragment newInstance() {
+    /* package */ static CameraFragment newInstance() {
         return new CameraFragment();
     }
 
