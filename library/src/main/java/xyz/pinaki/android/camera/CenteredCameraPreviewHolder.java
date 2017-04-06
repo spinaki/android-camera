@@ -9,13 +9,20 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CaptureRequest;
+import android.os.Handler;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -27,12 +34,17 @@ import java.util.List;
 /* package */ class CenteredCameraPreviewHolder extends ViewGroup implements SurfaceHolder.Callback {
     private final String TAG = CenteredCameraPreviewHolder.class.getSimpleName();
     SurfaceView surfaceView;
+    SurfaceHolder surfaceHolder;
     Size previewSize;
     Size pictureSize;
     Camera camera;
+    CameraDevice cameraDevice; // camera2
     Activity activity;
     int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
     RotationEventListener rotationEventListener;
+    private boolean isCamera2 = false;
+    CameraCaptureSession mCaptureSession;
+    Handler cameraHandler;
     // This flag is required to handle the case when the capture icon is tapped twice simultaneously.
     // Without the flag capture will be invoke again before the previous onPictureTaken call completed.
     // resulting in "RuntimeException takePicture failed" in android.hardware.Camera.takePicture(Camera.java:1436)
@@ -46,6 +58,13 @@ import java.util.List;
         super(activity);
         this.activity = activity;
         this.rotationEventListener = rListener;
+    }
+
+    /* package */ CenteredCameraPreviewHolder(Activity activity, RotationEventListener rListener, boolean isCamera2,
+                                              Handler backgroundHandler) {
+        this(activity, rListener);
+        this.isCamera2 = isCamera2;
+        cameraHandler = backgroundHandler;
     }
 
     /* package */ void addSurfaceView() {
@@ -71,6 +90,10 @@ import java.util.List;
     /* package */ void setCamera(Camera camera, int cameraId) {
         this.camera = camera;
         this.cameraId = cameraId;
+    }
+
+    /* package */ void setCamera(CameraDevice camera) {
+        this.cameraDevice = camera;
     }
 
     SurfaceView getSurfaceView() {
@@ -135,6 +158,7 @@ import java.util.List;
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.i(TAG, "surfaceCreated");
+        surfaceHolder = holder;
         // The Surface has been created, acquire the camera and tell it where
         // to draw.
         try {
@@ -144,7 +168,55 @@ import java.util.List;
         } catch (IOException exception) {
             Log.i(TAG, "IOException caused by setPreviewDisplay()", exception);
         }
+
+        if  (isCamera2 && cameraDevice != null ) {
+            List<Surface> outputs = Arrays.asList(surfaceHolder.getSurface());
+            try {
+                cameraDevice.createCaptureSession(outputs, mCaptureSessionListener, cameraHandler);
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+        }
     }
+
+    final CameraCaptureSession.StateCallback mCaptureSessionListener =
+            new CameraCaptureSession.StateCallback() {
+                @Override
+                public void onConfigured(CameraCaptureSession session) {
+                    Log.i(TAG, "Finished configuring camera outputs");
+                    mCaptureSession = session;
+                    if (surfaceHolder != null) {
+                        try {
+                            // Build a request for preview footage
+                            CaptureRequest.Builder requestBuilder =
+                                    cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
+                            requestBuilder.addTarget(surfaceHolder.getSurface());
+                            CaptureRequest previewRequest = requestBuilder.build();
+                            // Start displaying preview images
+                            try {
+                                session.setRepeatingRequest(previewRequest, /*listener*/null,
+                                /*handler*/null);
+                            } catch (CameraAccessException ex) {
+                                Log.e(TAG, "Failed to make repeating preview request", ex);
+                            }
+                        } catch (CameraAccessException ex) {
+                            Log.e(TAG, "Failed to build preview request", ex);
+                        }
+                    }
+                    else {
+                        Log.e(TAG, "Holder didn't exist when trying to formulate preview request");
+                    }
+                }
+                @Override
+                public void onClosed(CameraCaptureSession session) {
+                    mCaptureSession = null;
+                }
+
+                @Override
+                public void onConfigureFailed(CameraCaptureSession session) {
+                    Log.e(TAG, "Configuration error on device '" + cameraDevice.getId());
+                }
+            };
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {

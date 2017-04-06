@@ -12,20 +12,17 @@ import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-
-import java.util.Arrays;
-import java.util.List;
 
 import xyz.pinaki.androidcamera.R;
 
@@ -36,7 +33,7 @@ import xyz.pinaki.androidcamera.R;
 public class Camera2Fragment extends Fragment {
     private static final String TAG = Camera2Fragment.class.getSimpleName();
     CameraHandlerThread cameraHandlerThread;
-    Handler cameraHandler;
+    Handler cameraHandler, uiHandler;
     private CameraDevice camera;
     CenteredCameraPreviewHolder previewHolder;
     RelativeLayout parentLayout;
@@ -70,6 +67,7 @@ public class Camera2Fragment extends Fragment {
         cameraHandlerThread = new CameraHandlerThread();
         cameraHandlerThread.start();
         cameraHandler = new Handler(cameraHandlerThread.getLooper());
+        uiHandler = new Handler(Looper.getMainLooper());
         openCamera();
     }
 
@@ -110,17 +108,26 @@ public class Camera2Fragment extends Fragment {
             camera = cameraDevice;
 //            createCameraPreviewSession();
             // create the surfaceView
-            previewHolder = createCenteredCameraPreview(getActivity());
-            previewHolder.addSurfaceView();
-            parentLayout.addView(previewHolder, 0);
-//            previewHolder.setCamera(camera, cameraId);
-
-            List<Surface> outputs = Arrays.asList(previewHolder.getSurfaceView().getHolder().getSurface());
-//            camera.createCaptureSession(outputs, mCaptureSessionListener, mBackgroundHandler);
+            uiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    previewHolder = createCenteredCameraPreview(getActivity());
+                    previewHolder.addSurfaceView();
+                    parentLayout.addView(previewHolder, 0);
+                    previewHolder.setCamera(camera);
+//                    List<Surface> outputs = Arrays.asList(previewHolder.getSurfaceView().getHolder().getSurface());
+//                    try {
+//                        camera.createCaptureSession(outputs, mCaptureSessionListener, cameraHandler);
+//                    } catch (CameraAccessException e) {
+//                        e.printStackTrace();
+//                    }
+                }
+            });
         }
 
         private CenteredCameraPreviewHolder createCenteredCameraPreview(Activity activity) {
-            CenteredCameraPreviewHolder previewHolder = new CenteredCameraPreviewHolder(activity, rotationEventListener);
+            CenteredCameraPreviewHolder previewHolder = new CenteredCameraPreviewHolder(activity,
+                    rotationEventListener, true, cameraHandler);
             previewHolder.setBackgroundColor(Color.BLACK);
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams
                     .MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);

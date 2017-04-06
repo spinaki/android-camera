@@ -43,7 +43,7 @@ public class CameraController {
         if (isCamera2Supported(activity)) {
             Log.i(TAG, "Camera2 Supported");
             activity.getSupportFragmentManager().beginTransaction().replace(
-                    containerID, Camera2FragmentNew.newInstance(), "Camera2Fragment").commit();
+                    containerID, Camera2Fragment.newInstance(), "Camera2Fragment").commit();
         } else {
             Log.i(TAG, "Camera2 NOT Supported");
             activity.getSupportFragmentManager().beginTransaction().replace(

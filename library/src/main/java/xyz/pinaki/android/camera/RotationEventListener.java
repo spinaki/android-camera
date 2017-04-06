@@ -22,16 +22,16 @@ import android.view.Surface;
     // will be useful for showing preview in the correct orientation
     private int cameraDisplayRotation = 0;
 
-    /* */ void onRotationChanged(Activity activity, Camera.CameraInfo cameraInfo) {
+    /* package */ void onRotationChanged(Activity activity, Camera.CameraInfo cameraInfo) {
         this.deviceDisplayRotation = deviceDisplayRotationInDegrees(activity);
         this.cameraDisplayRotation = cameraDisplayRotation(cameraInfo, this.deviceDisplayRotation);
     }
 
-    int getDeviceDisplayRotation() {
+    /* package */ int getDeviceDisplayRotation() {
         return deviceDisplayRotation;
     }
 
-    int getCameraDisplayRotation() {
+    /* package */ int getCameraDisplayRotation() {
         return cameraDisplayRotation;
     }
 
