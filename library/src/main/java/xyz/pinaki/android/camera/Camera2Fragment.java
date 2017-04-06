@@ -71,6 +71,24 @@ public class Camera2Fragment extends Fragment {
         openCamera();
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (camera != null) {
+            camera.close();
+            camera = null;
+        }
+        if (parentLayout != null) {
+            parentLayout.removeView(previewHolder);
+        }
+        cameraHandlerThread.quitSafely();
+        try {
+            cameraHandlerThread.join();
+        } catch (InterruptedException ex) {
+            Log.e(TAG, "Background worker thread was interrupted while joined", ex);
+        }
+    }
+
 
     private void openCamera() {
         CameraManager manager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
@@ -152,7 +170,6 @@ public class Camera2Fragment extends Fragment {
                 activity.finish();
             }
         }
-
     };
 
 }

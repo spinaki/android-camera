@@ -14,6 +14,7 @@ import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CaptureRequest;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -182,7 +183,7 @@ import java.util.List;
     final CameraCaptureSession.StateCallback mCaptureSessionListener =
             new CameraCaptureSession.StateCallback() {
                 @Override
-                public void onConfigured(CameraCaptureSession session) {
+                public void onConfigured(@NonNull CameraCaptureSession session) {
                     Log.i(TAG, "Finished configuring camera outputs");
                     mCaptureSession = session;
                     if (surfaceHolder != null) {
@@ -224,6 +225,10 @@ import java.util.List;
         // Surface will be destroyed when we return, so stop the preview.
         if (camera != null) {
             stopCameraPreview();
+        }
+        if (mCaptureSession != null) {
+            mCaptureSession.close();
+            mCaptureSession = null;
         }
     }
 
