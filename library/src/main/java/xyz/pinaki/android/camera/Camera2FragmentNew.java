@@ -85,7 +85,7 @@ public class Camera2FragmentNew extends Fragment {
      * @param height The minimum desired height
      * @return The optimal {@code Size}, or an arbitrary one if none were big enough
      */
-    static Size chooseBigEnoughSize(Size[] choices, int width, int height) {
+    private static Size chooseBigEnoughSize(Size[] choices, int width, int height) {
         // Collect the supported resolutions that are at least as big as the preview Surface
         List<Size> bigEnough = new ArrayList<Size>();
         for (Size option : choices) {

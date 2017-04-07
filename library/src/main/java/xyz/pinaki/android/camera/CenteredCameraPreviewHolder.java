@@ -11,8 +11,11 @@ import android.hardware.Camera;
 import android.hardware.Camera.Size;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
+import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
+import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.StreamConfigurationMap;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.util.Log;
@@ -23,7 +26,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -33,7 +39,7 @@ import java.util.List;
  */
 @SuppressWarnings("deprecation")
 /* package */ class CenteredCameraPreviewHolder extends ViewGroup implements SurfaceHolder.Callback {
-    private final String TAG = CenteredCameraPreviewHolder.class.getSimpleName();
+    private static final String TAG = CenteredCameraPreviewHolder.class.getSimpleName();
     SurfaceView surfaceView;
     SurfaceHolder surfaceHolder;
     Size previewSize;
@@ -109,7 +115,7 @@ import java.util.List;
         final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
         final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
         setMeasuredDimension(width, height);
-//        Log.i(TAG, "onMeasure, width:" + width + ", height:" + height);
+        Log.i(TAG, "onMeasure, width:" + width + ", height:" + height);
         if (camera != null) {
             try {
                 Camera.Parameters parameters = camera.getParameters();
@@ -148,7 +154,7 @@ import java.util.List;
             float fact = factH < factW ? factH : factW;
             int layoutHeight = (int) (previewHeight * fact);
             int layoutWidth = (int) (previewWidth * fact);
-//            Log.i(TAG, "Final Preview Layout Width = " + layoutWidth + ", Height = " + layoutHeight);
+            Log.i(TAG, "onLayout Width = " + layoutWidth + ", Height = " + layoutHeight);
             child.layout( (availableWidth - layoutWidth ) / 2 ,
                     (availableHeight - layoutHeight) / 2,
                     (availableWidth + layoutWidth ) / 2,
@@ -256,6 +262,28 @@ import java.util.List;
             } catch (RuntimeException exception) {
                 Log.i(TAG, "RuntimeException caused by getParameters in surfaceChanged", exception);
             }
+        } else if (cameraDevice != null && isCamera2) {
+            CameraManager cameraManager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+            try {
+                CameraCharacteristics cameraCharacteristics =
+                        cameraManager.getCameraCharacteristics(cameraDevice.getId());
+                StreamConfigurationMap info = cameraCharacteristics
+                        .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+                android.util.Size optimalSize = chooseBigEnoughSize(
+                        info.getOutputSizes(SurfaceHolder.class), width, height);
+                final int orientation = getResources().getConfiguration().orientation;
+                Log.i(TAG, "surfaceChanged optimalSize: WxH " + optimalSize.getWidth() + ", " + optimalSize.getHeight());
+                if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                    surfaceHolder.setFixedSize(optimalSize.getWidth(), optimalSize.getHeight());
+                } else {
+                    surfaceHolder.setFixedSize(optimalSize.getHeight(), optimalSize.getWidth());
+                }
+                // do you have to add
+//                configureOrientationParams();
+                requestLayout();
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -336,5 +364,33 @@ import java.util.List;
 
     /*package*/ void setSafeToTakePicture(boolean safeToTakePicture) {
         this.safeToTakePicture = safeToTakePicture;
+    }
+
+    private static android.util.Size chooseBigEnoughSize(android.util.Size[] choices, int width, int height) {
+        // Collect the supported resolutions that are at least as big as the preview Surface
+        List<android.util.Size> bigEnough = new ArrayList<android.util.Size>();
+        for (android.util.Size option : choices) {
+            if (option.getWidth() >= width && option.getHeight() >= height) {
+                bigEnough.add(option);
+            }
+        }
+        // Pick the smallest of those, assuming we found any
+        if (bigEnough.size() > 0) {
+            return Collections.min(bigEnough, new CompareSizesByArea());
+        } else {
+            Log.i(TAG, "Couldn't find any suitable preview size");
+            return choices[0];
+        }
+    }
+    /**
+     * Compares two {@code Size}s based on their areas.
+     */
+    static class CompareSizesByArea implements Comparator<android.util.Size> {
+        @Override
+        public int compare(android.util.Size lhs, android.util.Size rhs) {
+            // We cast here to ensure the multiplications won't overflow
+            return Long.signum((long) lhs.getWidth() * lhs.getHeight() -
+                    (long) rhs.getWidth() * rhs.getHeight());
+        }
     }
 }
