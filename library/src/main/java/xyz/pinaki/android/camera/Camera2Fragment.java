@@ -62,6 +62,17 @@ public class Camera2Fragment extends Fragment {
     }
 
     @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        View cameraSwitch = view.findViewById(R.id.switch_cam);
+        cameraSwitch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switchCamera();
+            }
+        });
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         cameraHandlerThread = new CameraHandlerThread();
@@ -89,8 +100,12 @@ public class Camera2Fragment extends Fragment {
         }
     }
 
-
     private void openCamera() {
+        openCamera(CameraCharacteristics.LENS_FACING_BACK);
+    }
+
+
+    private void openCamera(int lensFacing) {
         CameraManager manager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
         try {
             for (String cameraId : manager.getCameraIdList()) {
@@ -98,8 +113,9 @@ public class Camera2Fragment extends Fragment {
                         = manager.getCameraCharacteristics(cameraId);
 
                 // We don't use a front facing camera in this sample.
+                // this needs to change.
                 Integer facing = characteristics.get(CameraCharacteristics.LENS_FACING);
-                if (facing != null && facing == CameraCharacteristics.LENS_FACING_FRONT) {
+                if (facing == null || facing != lensFacing) {
                     continue;
                 }
                 // add permissions
@@ -133,12 +149,6 @@ public class Camera2Fragment extends Fragment {
                     previewHolder.addSurfaceView();
                     parentLayout.addView(previewHolder, 0);
                     previewHolder.setCamera(camera);
-//                    List<Surface> outputs = Arrays.asList(previewHolder.getSurfaceView().getHolder().getSurface());
-//                    try {
-//                        camera.createCaptureSession(outputs, mCaptureSessionListener, cameraHandler);
-//                    } catch (CameraAccessException e) {
-//                        e.printStackTrace();
-//                    }
                 }
             });
         }
@@ -171,5 +181,26 @@ public class Camera2Fragment extends Fragment {
             }
         }
     };
+
+    private void switchCamera() {
+        CameraManager manager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
+        try {
+            CameraCharacteristics characteristics = manager.getCameraCharacteristics(camera.getId());
+            int lensFacing = characteristics.get(CameraCharacteristics.LENS_FACING) ==  CameraCharacteristics
+                    .LENS_FACING_FRONT ? CameraCharacteristics.LENS_FACING_BACK : CameraCharacteristics
+                    .LENS_FACING_FRONT;
+            if (camera != null) {
+                camera.close();
+                camera = null;
+            }
+            if (parentLayout != null ) {
+                parentLayout.removeView(previewHolder);
+            }
+            openCamera(lensFacing);
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+
+    }
 
 }
