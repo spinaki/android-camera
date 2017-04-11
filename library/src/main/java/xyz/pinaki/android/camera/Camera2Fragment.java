@@ -17,6 +17,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,6 +48,18 @@ public class Camera2Fragment extends Fragment {
 
     /* package */ static Camera2Fragment newInstance() {
         return new Camera2Fragment();
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        Log.i(TAG, "onActivityCreated");
+        super.onActivityCreated(savedInstanceState);
+        if (getActivity() instanceof AppCompatActivity &&
+                ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
+            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        } else if (getActivity() != null && getActivity().getActionBar() != null) {
+            getActivity().getActionBar().hide();
+        }
     }
 
     @Override
