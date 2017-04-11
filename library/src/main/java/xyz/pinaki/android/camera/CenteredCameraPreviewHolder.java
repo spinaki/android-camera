@@ -118,21 +118,16 @@ import java.util.List;
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         final int width = resolveSize(getSuggestedMinimumWidth(), widthMeasureSpec);
         final int height = resolveSize(getSuggestedMinimumHeight(), heightMeasureSpec);
-//        int width = MeasureSpec.getSize(widthMeasureSpec);
-//        int height = MeasureSpec.getSize(heightMeasureSpec);
-
-//        setMeasuredDimension(width, height);
         Log.i(TAG, "onMeasure, width:" + width + ", height:" + height);
         if (camera != null) {
             try {
                 Camera.Parameters parameters = camera.getParameters();
                 List<Size> supportedPreviewSizes = parameters.getSupportedPreviewSizes();
                 List<Size> supportedPictureSize = parameters.getSupportedPictureSizes();
-                // FIX THIS for CAMERA1
-//                previewSize = getOptimalPreviewSize(supportedPreviewSizes, width, height);
-//                pictureSize = getOptimalPreviewSize(supportedPictureSize, width, height);
-//                Log.i(TAG, "getOptimalPreviewSize: width:" + previewSize.width + ", height:" + previewSize.height);
-//                Log.i(TAG, "getOptimalPictureSize: width:" + pictureSize.width + ", height:" + pictureSize.height);
+                previewSize = getOptimalPreviewSize(supportedPreviewSizes, width, height);
+                pictureSize = getOptimalPreviewSize(supportedPictureSize, width, height);
+                Log.i(TAG, "getOptimalPreviewSize: width:" + previewSize.width + ", height:" + previewSize.height);
+                Log.i(TAG, "getOptimalPictureSize: width:" + pictureSize.width + ", height:" + pictureSize.height);
             } catch (RuntimeException exception) {
                 Log.i(TAG, "RuntimeException caused by getParameters in onMeasure", exception);
             }
@@ -144,19 +139,6 @@ import java.util.List;
                 StreamConfigurationMap info = cameraCharacteristics
                         .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
                 android.util.Size[] sizes = info.getOutputSizes(SurfaceHolder.class);
-//                optimalSize = getOptimalPreviewSize(sizes, width, height);
-////                optimalSize = findBestAspectRatioMatch(sizes, width, height);
-////                optimalSize = findBestSize(sizes);
-//                Log.i(TAG, "onMeasure, cameraDevice  width:" + optimalSize.getWidth() + ", height:" +
-//                        optimalSize.getHeight());
-//                if (isPortrait()) {
-//                    setMeasuredDimension(optimalSize.getHeight(), optimalSize.getWidth());
-//                } else {
-//                    setMeasuredDimension(optimalSize.getWidth(), optimalSize.getHeight());
-//                }
-//                setMeasuredDimension(optimalSize.getWidth(), optimalSize.getHeight());
-//                setMeasuredDimension(1280, 1706); // 1280,3024  // 1080, 1731 // 1280, 1706
-//
                 Point displaySize = new Point();
                 android.util.Size largest = Collections.max(
                         Arrays.asList(info.getOutputSizes(ImageFormat.JPEG)), new CompareSizesByArea());
@@ -182,14 +164,6 @@ import java.util.List;
                 } else {
                     setMeasuredDimension(optimalSize.getWidth(), optimalSize.getHeight());
                 }
-//
-////                setMeasuredDimension(optimalSize.getWidth(), optimalSize.getHeight());
-////                setMeasuredDimension(1280, 1706);
-//                if (width < height * optimalSize.getWidth() / optimalSize.getHeight()) {
-//                    setMeasuredDimension(width, width * optimalSize.getHeight() / optimalSize.getWidth());
-//                } else {
-//                    setMeasuredDimension(height * optimalSize.getWidth() / optimalSize.getHeight(), height);
-//                }
             } catch (CameraAccessException e) {
                 e.printStackTrace();
             }
@@ -376,53 +350,10 @@ import java.util.List;
             } catch (RuntimeException exception) {
                 Log.i(TAG, "RuntimeException caused by getParameters in surfaceChanged", exception);
             }
-        } else {
-//            surfaceHolder.setFixedSize(768, 1280);
-//            requestLayout(); // triggers the onMeasure ?
         }
-//        else if (cameraDevice != null && isCamera2) {
-//            CameraManager cameraManager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
-//            try {
-//                CameraCharacteristics cameraCharacteristics =
-//                        cameraManager.getCameraCharacteristics(cameraDevice.getId());
-//                StreamConfigurationMap info = cameraCharacteristics
-//                        .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-//                android.util.Size optimalSize = chooseBigEnoughSize(
-//                        info.getOutputSizes(SurfaceHolder.class), width, height);
-//                final int orientation = getResources().getConfiguration().orientation;
-//                Log.i(TAG, "surfaceChanged optimalSize: WxH " + optimalSize.getWidth() + ", " + optimalSize.getHeight());
-//                if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//                    surfaceHolder.setFixedSize(optimalSize.getWidth(), optimalSize.getHeight());
-//                } else {
-//                    surfaceHolder.setFixedSize(optimalSize.getHeight(), optimalSize.getWidth());
-//                }
-                // do you have to add
-//                configureOrientationParams();
-//                requestLayout();
-//            } catch (CameraAccessException e) {
-//                e.printStackTrace();
-//            }
-//        }
     }
 
-    private android.util.Size findBestAspectRatioMatch(android.util.Size[] sizes, int targetWidth, int targetHeight) {
-        boolean isPortrait = isPortrait();
-        double targetRatio = (double) targetWidth / targetHeight;
-        double minDiff = Double.MAX_VALUE;
-        android.util.Size matchedSize = null;
-        for (android.util.Size size : sizes) {
-            double ratio = (double) size.getWidth() / size.getHeight();
-            if (isPortrait) {
-                ratio = (double) size.getHeight() / size.getWidth();
-            }
-            if (Math.abs(targetRatio - ratio) < minDiff) {
-                minDiff = Math.abs(targetRatio - ratio);
-                matchedSize = size;
-            }
-        }
-        return matchedSize;
-    }
-
+    // best size based on aspect ratio
     private android.util.Size findBestSize(android.util.Size[] outputSizes) {
         // Find a good size for output - largest 16:9 aspect ratio that's less than 720p
         final int MAX_WIDTH = 1280;
@@ -449,20 +380,20 @@ import java.util.List;
     }
 
     // http://stackoverflow.com/questions/19577299/android-camera-preview-stretched
-    private android.util.Size getOptimalPreviewSize(android.util.Size[] sizes, int targetWidth, int targetHeight) {
+    private Size getOptimalPreviewSize(List<Size> sizes, int targetWidth, int targetHeight) {
         final double ASPECT_TOLERANCE = 0.1;
         double targetRatio = (double) targetWidth / targetHeight;
         if (sizes == null) return null;
-        android.util.Size optimalPreviewSize = null;
+        Size optimalPreviewSize = null;
         double minDiff = Double.MAX_VALUE;
         boolean isPortrait = isPortrait();
         // Try to find an size match aspect ratio and size
-        for (android.util.Size size : sizes) {
-            int previewWidth = size.getWidth();
-            int previewHeight = size.getHeight();
+        for (Size size : sizes) {
+            int previewWidth = size.width;
+            int previewHeight = size.height;
             if (isPortrait) {
-                previewWidth = size.getHeight();
-                previewHeight = size.getWidth();
+                previewWidth = size.height;
+                previewHeight = size.width;
             }
             double ratio = (double) previewWidth / previewHeight;
             if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) {
@@ -476,12 +407,12 @@ import java.util.List;
         // Cannot find the one match the aspect ratio, ignore the requirement
         if (optimalPreviewSize == null) {
             minDiff = Double.MAX_VALUE;
-            for (android.util.Size size : sizes) {
-                int previewWidth = size.getWidth();
-                int previewHeight = size.getHeight();
+            for (Size size : sizes) {
+                int previewWidth = size.width;
+                int previewHeight = size.height;
                 if (isPortrait) {
-                    previewWidth = size.getHeight();
-                    previewHeight = size.getWidth();
+                    previewWidth = size.height;
+                    previewHeight = size.width;
                 }
                 double curRatio = ((double) previewWidth) / previewHeight;
                 double deltaRatio = Math.abs(targetRatio - curRatio);
