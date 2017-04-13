@@ -4,11 +4,16 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.hardware.Camera;
 import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
+import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.TotalCaptureResult;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -24,6 +29,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+
+import junit.framework.Assert;
 
 import xyz.pinaki.androidcamera.R;
 
@@ -41,6 +48,25 @@ public class Camera2Fragment extends Fragment {
     private RotationEventListener rotationEventListener = new RotationEventListener();
     View previewContainer;
     ImageView previewImage;
+    private final CameraCallback cameraCallback = new CameraCallback() {
+
+        @Override
+        public void onPictureTaken(Bitmap bitmap) {
+            Assert.fail("Stub!");
+        }
+
+        @Override
+        public void onCameraOpen(Camera camera) {
+            Assert.fail("Stub!");
+        }
+
+        @Override
+        public void onBitmapProcessed(Bitmap bitmap) {
+            Log.i(TAG, "onBitmapProcessed");
+            previewContainer.setVisibility(View.VISIBLE);
+            previewImage.setImageBitmap(bitmap);
+        }
+    };
 
     public Camera2Fragment() {
         // empty constructor
@@ -81,6 +107,45 @@ public class Camera2Fragment extends Fragment {
             @Override
             public void onClick(View view) {
                 switchCamera();
+            }
+        });
+
+        View shutterIcon = view.findViewById(R.id.shutter);
+        shutterIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.i(TAG, "shutter clicked");
+                if ( previewHolder != null && previewHolder.getCaptureSession() != null && previewHolder
+                        .getImageReader() != null) {
+                    Log.i(TAG, "shutter clicked if block");
+                    try {
+                        CaptureRequest.Builder requester = camera.createCaptureRequest(CameraDevice
+                                .TEMPLATE_STILL_CAPTURE);
+                        requester.addTarget(previewHolder.getImageReader().getSurface());
+                        CameraCaptureSession.CaptureCallback captureCallback
+                                = new CameraCaptureSession.CaptureCallback() {
+
+                            @Override
+                            public void onCaptureCompleted(@NonNull CameraCaptureSession session,
+                                                           @NonNull CaptureRequest request,
+                                                           @NonNull TotalCaptureResult result) {
+                                Log.d(TAG, "onCaptureCompleted");
+                            }
+                        };
+                        previewHolder.getCaptureSession().capture(requester.build(), captureCallback, cameraHandler);
+                    } catch (CameraAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        previewContainer = view.findViewById(R.id.preview_container);
+        previewImage = (ImageView) view.findViewById(R.id.preview_image);
+        final ImageView previewCloseButton = (ImageView) view.findViewById(R.id.preview_close_icon);
+        previewCloseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                previewContainer.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -168,7 +233,7 @@ public class Camera2Fragment extends Fragment {
 
         private CenteredCameraPreviewHolder createCenteredCameraPreview(Activity activity) {
             CenteredCameraPreviewHolder previewHolder = new CenteredCameraPreviewHolder(activity,
-                    rotationEventListener, true, cameraHandler);
+                    rotationEventListener, true, cameraHandler, cameraCallback);
             previewHolder.setBackgroundColor(Color.BLACK);
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams
                     .MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -213,7 +278,5 @@ public class Camera2Fragment extends Fragment {
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-
     }
-
 }

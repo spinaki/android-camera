@@ -7,6 +7,7 @@ package xyz.pinaki.android.camera;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
 import android.graphics.Point;
 import android.hardware.Camera;
@@ -18,7 +19,10 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.media.Image;
+import android.media.ImageReader;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.Surface;
@@ -28,6 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -55,6 +60,8 @@ import java.util.List;
     private boolean isCamera2 = false;
     CameraCaptureSession mCaptureSession;
     Handler cameraHandler;
+    private ImageReader mImageReader;
+    CameraCallback cameraCallback;
     // This flag is required to handle the case when the capture icon is tapped twice simultaneously.
     // Without the flag capture will be invoke again before the previous onPictureTaken call completed.
     // resulting in "RuntimeException takePicture failed" in android.hardware.Camera.takePicture(Camera.java:1436)
@@ -71,10 +78,11 @@ import java.util.List;
     }
 
     /* package */ CenteredCameraPreviewHolder(Activity activity, RotationEventListener rListener, boolean isCamera2,
-                                              Handler backgroundHandler) {
+                                              Handler backgroundHandler, CameraCallback cameraCallback) {
         this(activity, rListener);
         this.isCamera2 = isCamera2;
         cameraHandler = backgroundHandler;
+        this.cameraCallback = cameraCallback;
     }
 
     /* package */ void addSurfaceView() {
@@ -265,7 +273,10 @@ import java.util.List;
         }
 
         if  (isCamera2 && cameraDevice != null ) {
-            List<Surface> outputs = Arrays.asList(surfaceHolder.getSurface());
+            mImageReader = ImageReader.newInstance(optimalSize.getWidth(), optimalSize.getHeight(),
+                    ImageFormat.JPEG, /*maxImages*/2);
+            mImageReader.setOnImageAvailableListener(mOnImageAvailableListener, cameraHandler);
+            List<Surface> outputs = Arrays.asList(holder.getSurface(), mImageReader.getSurface());
             try {
                 cameraDevice.createCaptureSession(outputs, mCaptureSessionListener, cameraHandler);
             } catch (CameraAccessException e) {
@@ -323,6 +334,10 @@ import java.util.List;
         if (mCaptureSession != null) {
             mCaptureSession.close();
             mCaptureSession = null;
+        }
+        if (mImageReader != null) {
+            mImageReader.close();
+            mImageReader = null;
         }
     }
 
@@ -485,6 +500,53 @@ import java.util.List;
             // We cast here to ensure the multiplications won't overflow
             return Long.signum((long) lhs.getWidth() * lhs.getHeight() -
                     (long) rhs.getWidth() * rhs.getHeight());
+        }
+    }
+
+
+    /* package */ CameraCaptureSession getCaptureSession() {
+        return mCaptureSession;
+    }
+
+    /* package */ ImageReader getImageReader() {
+        return mImageReader;
+    }
+
+    final ImageReader.OnImageAvailableListener mOnImageAvailableListener =
+            new ImageReader.OnImageAvailableListener() {
+                @Override
+                public void onImageAvailable(ImageReader reader) {
+                    // Save the image once we get a chance
+                    cameraHandler.post(new CapturedImageSaver(reader.acquireNextImage()));
+                    // Control flow continues in CapturedImageSaver#run()
+                }};
+    class CapturedImageSaver implements Runnable {
+        /**
+         * The image to save.
+         */
+        private Image mCapture;
+
+        public CapturedImageSaver(Image capture) {
+            mCapture = capture;
+        }
+
+        @Override
+        public void run() {
+            ByteBuffer buffer = mCapture.getPlanes()[0].getBuffer();
+            byte[] bytes = new byte[buffer.remaining()];
+            buffer.get(bytes);
+            Log.i(TAG, "CapturedImageSaver, bytes size: " + bytes.length);
+            final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(bytes, 800);
+            Handler uiHandler = new Handler(Looper.getMainLooper());
+            uiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+//                     render the camera image back to the UI.
+                    if (cameraCallback != null) {
+                        cameraCallback.onBitmapProcessed(bitmap);
+                    }
+                }
+            });
         }
     }
 }
