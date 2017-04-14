@@ -1,14 +1,11 @@
-package xyz.pinaki.androidcamera;
+package xyz.pinaki.android.camera;
 
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -24,6 +21,9 @@ import android.widget.RelativeLayout;
 
 import java.util.List;
 
+import xyz.pinaki.androidcamera.R;
+
+
 /**
  * Created by pinaki.
  * references:
@@ -36,17 +36,44 @@ import java.util.List;
  */
 
 @SuppressWarnings("deprecation")
-public class CameraFragment extends Fragment implements Camera.PictureCallback {
+public class CameraFragment extends Fragment {
     private static final int COMPRESS_IMAGE_MAX_DIMENSION = 800;
     private static final String TAG = CameraFragment.class.getSimpleName();
     private static final int REQUEST_CAMERA = 0;
     private Camera camera = null;
-    private CameraOrientationListener orientationListener;
-    private CameraCallback cameraCallback = null;
-    private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+    // necessary for correctly rotating the captured bitmap so that exported image / view has the correct orientation--
+    // this is especially if the phone is in landscape mode while capturing.
+    private DeviceOrientationListener orientationListener;
+    private RotationEventListener rotationEventListener = new RotationEventListener();;
+    private int cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
     private boolean shouldCreateLowresImage = true;
     CenteredCameraPreviewHolder previewHolder;
     RelativeLayout parentLayout;
+    View previewContainer;
+    ImageView previewImage;
+    private CameraHandlerThread cameraHandlerThread;
+    private final CameraCallback cameraCallback = new CameraCallback() {
+        @Override
+        public void onPictureTaken(Bitmap bitmap) {
+            cameraHandlerThread.processBitmap(cameraId, bitmap,  orientationListener, rotationEventListener, this);
+        }
+
+        @Override
+        public void onCameraOpen(Camera cam) {
+            camera = cam;
+            previewHolder = createCenteredCameraPreview(getActivity());
+            previewHolder.addSurfaceView();
+            parentLayout.addView(previewHolder, 0);
+            previewHolder.setCamera(camera, cameraId);
+        }
+
+        @Override
+        public void onBitmapProcessed(Bitmap bitmap) {
+            previewContainer.setVisibility(View.VISIBLE);
+            previewImage.setImageBitmap(bitmap);
+            previewHolder.startCameraPreview();
+        }
+    };
 
     public CameraFragment() {
         // empty constructor
@@ -73,77 +100,70 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
             orientationListener.rememberOrientation();
             if (previewHolder.getSafeToTakePicture()) {
                 previewHolder.setSafeToTakePicture(false);
-                camera.takePicture(null, null, this);
+                cameraHandlerThread.capturePhoto(camera, cameraCallback);
             }
         } else {
             Log.i(TAG, "previewHolder is NULL");
         }
     }
 
-    @Override
-    public void onPictureTaken(byte[] data, Camera camera) {
-        if (cameraCallback != null) {
-            Bitmap bitmap;
-            if (shouldCreateLowresImage) {
-                bitmap = BitmapUtils.createSampledBitmapFromBytes(data, COMPRESS_IMAGE_MAX_DIMENSION);
-            } else {
-                bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
-            }
-            int rotation = (previewHolder.getDisplayOrientation() + orientationListener.getRememberedOrientation() +
-                    previewHolder.getLayoutOrientation()) % 360;
-            Log.i(TAG, "onPictureTaken displayOrientation: " + previewHolder.getDisplayOrientation() + ", " +
-                    "orientationListener: " + orientationListener.currentNormalizedOrientation + ", " +
-                    orientationListener.rememberedNormalizedOrientation +
-                    ", layoutOrientation: " + previewHolder.getLayoutOrientation() + ", rotation: " + rotation);
-            Matrix matrix = new Matrix();
-            if (cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                float[] mirrorY = {-1, 0, 0, 0, 1, 0, 0, 0, 1};
-                Matrix matrixMirrorY = new Matrix();
-                matrixMirrorY.setValues(mirrorY);
-                matrix.postConcat(matrixMirrorY);
-            }
-            matrix.postRotate(rotation);
-            Log.i(TAG, "createBitmap: width: " + bitmap.getWidth() + ", height: " + bitmap.getHeight());
-            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
-            cameraCallback.onPictureTaken(bitmap);
-            previewHolder.startCameraPreview(); // start preview in the background
-        }
-    }
+//    @Override
+//    public void onPictureTaken(byte[] data, Camera camera) {
+//        if (cameraCallback != null) {
+//            Bitmap bitmap;
+//            if (shouldCreateLowresImage) {
+//                bitmap = BitmapUtils.createSampledBitmapFromBytes(data, COMPRESS_IMAGE_MAX_DIMENSION);
+//            } else {
+//                bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
+//            }
+//            int rotation = (previewHolder.getDisplayOrientation() + orientationListener.getRememberedOrientation() +
+//                    previewHolder.getLayoutOrientation()) % 360;
+////            Log.i(TAG, "onPictureTaken displayOrientation: " + previewHolder.getDisplayOrientation() + ", " +
+////                    "orientationListener: " + orientationListener.currentNormalizedOrientation + ", " +
+////                    orientationListener.rememberedNormalizedOrientation +
+////                    ", layoutOrientation: " + previewHolder.getLayoutOrientation() + ", rotation: " + rotation);
+//            Matrix matrix = new Matrix();
+//            if (cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+//                float[] mirrorY = {-1, 0, 0, 0, 1, 0, 0, 0, 1};
+//                Matrix matrixMirrorY = new Matrix();
+//                matrixMirrorY.setValues(mirrorY);
+//                matrix.postConcat(matrixMirrorY);
+//            }
+//            matrix.postRotate(rotation);
+//            Log.i(TAG, "createBitmap: width: " + bitmap.getWidth() + ", height: " + bitmap.getHeight());
+//            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
+//            cameraCallback.onPictureTaken(bitmap);
+//            previewHolder.startCameraPreview(); // start preview in the background
+//        }
+//    }
 
     @Override
     public void onResume() {
-        Log.i(TAG, "onResume");
         super.onResume();
-        getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        cameraHandlerThread = new CameraHandlerThread();
+        cameraHandlerThread.start();
         openCamera();
         orientationListener.enable();
     }
 
-    private boolean openCamera() {
-        Log.i(TAG, "openCamera");
+    private void openCamera() {
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
-            Log.i(TAG, "Requesting Camera Permissions");
             requestCameraPermission();
         } else {
-            Log.i(TAG, "Got Permissions in OpenCam");
             if (checkCameraHardware(getContext())) {
                 try {
                     if (camera != null) {
                         stopAndRelease();
                     }
-                    camera = Camera.open(cameraId);
-                    previewHolder.setCamera(camera, cameraId);
-                    return true;
+                    cameraHandlerThread.openCamera(cameraId, cameraCallback);
                 } catch (RuntimeException exception) {
                     Log.i(TAG, "Cannot open camera with id " + cameraId, exception);
-                    return false;
                 }
             } else {
                 Log.i(TAG, "Camera Not Present");
             }
         }
-        return false;
     }
 
     private void stopAndRelease() {
@@ -163,6 +183,9 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
         super.onPause();
         stopAndRelease();
         orientationListener.disable();
+        if (cameraHandlerThread != null) {
+            cameraHandlerThread.quit();
+        }
     }
 
     @Override
@@ -175,8 +198,7 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
         } else if ( getActivity() !=  null && getActivity().getActionBar() != null) {
             getActivity().getActionBar().hide();
         }
-        orientationListener = new CameraOrientationListener(getActivity());
-        orientationListener.setCamera1Fragment(this);
+        orientationListener = new DeviceOrientationListener(getActivity());
     }
 
 
@@ -188,9 +210,6 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
                 != PackageManager.PERMISSION_GRANTED) {
             Log.i(TAG, "Requesting Camera Permissions from onCreateView ");
             requestCameraPermission();
-        } else {
-            previewHolder = createCenteredCameraPreview(getActivity());
-            parentLayout.addView(previewHolder, 0);
         }
         return parentLayout;
     }
@@ -204,15 +223,17 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
                 takePicture();
             }
         });
-        final View previewContainer = view.findViewById(R.id.preview_container);
-        final ImageView previewImage = (ImageView) view.findViewById(R.id.preview_image);
-        setCameraCallback(new CameraCallback() {
+        View cameraSwitch = view.findViewById(R.id.switch_cam);
+        cameraSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onPictureTaken(Bitmap bitmap) {
-                previewContainer.setVisibility(View.VISIBLE);
-                previewImage.setImageBitmap(bitmap);
+            public void onClick(View view) {
+                stopAndRelease();
+                switchCamera();
             }
         });
+
+        previewContainer = view.findViewById(R.id.preview_container);
+        previewImage = (ImageView) view.findViewById(R.id.preview_image);
         final ImageView previewCloseButton = (ImageView) view.findViewById(R.id.preview_close_icon);
         previewCloseButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -228,14 +249,8 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
         super.onDestroyView();
     }
 
-    // TODO: this should not be here -- bad design.
-    protected void rotateUI(int angle) {
-        // do nothing. do in child class.
-    }
-
     private CenteredCameraPreviewHolder createCenteredCameraPreview(Activity activity) {
-        CenteredCameraPreviewHolder previewHolder = new CenteredCameraPreviewHolder(activity);
-        Log.i(TAG, "previewHolder created");
+        CenteredCameraPreviewHolder previewHolder = new CenteredCameraPreviewHolder(activity, rotationEventListener);
         previewHolder.setBackgroundColor(Color.BLACK);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams
                 .MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -243,23 +258,13 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
         return previewHolder;
     }
 
-//    protected boolean switchCamera() {
-//        int id = (cameraId == Camera.CameraInfo.CAMERA_FACING_BACK ? Camera.CameraInfo.CAMERA_FACING_FRONT :
-//                Camera.CameraInfo.CAMERA_FACING_BACK);
-//        return switchCamera(id);
-//    }
-
-//    protected boolean switchCamera(int cameraId) {
-//        if (this.cameraId == cameraId) {
-//            return true;
-//        }
-//        this.cameraId = cameraId;
-//        parentLayout.removeView(previewHolder);
-//        previewHolder = createCenteredCameraPreview(getActivity());
-//        // adding child at an index 0
-//        parentLayout.addView(previewHolder, 0);
-//        return openCamera();
-//    }
+    /* package */ void switchCamera() {
+        cameraId = (cameraId == Camera.CameraInfo.CAMERA_FACING_BACK) ? Camera.CameraInfo.CAMERA_FACING_FRONT :
+                Camera.CameraInfo.CAMERA_FACING_BACK;
+        Log.i(TAG, "switching to camera: " + cameraId);
+        parentLayout.removeView(previewHolder);
+        openCamera();
+    }
 
 //    protected boolean isFrontFacingCamera() {
 //        if (cameraId == Camera.CameraInfo.CAMERA_FACING_FRONT) {
@@ -281,10 +286,6 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
             }
         }
         return false;
-    }
-
-    protected void setCameraCallback(CameraCallback cameraCallback) {
-        this.cameraCallback = cameraCallback;
     }
 
     protected void setFlashMode(CameraFlashMode mode) {
@@ -329,20 +330,10 @@ public class CameraFragment extends Fragment implements Camera.PictureCallback {
             if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Camera permission has been granted, preview can be displayed
                 Log.i(TAG, "CAMERA permission has now been granted. Showing preview.");
-                requestPermissionFollowUp();
+                // requestPermissionFollowUp();
             } else {
                 Log.i(TAG, "CAMERA permission was NOT granted.");
             }
-        }
-    }
-
-    private void requestPermissionFollowUp() {
-        Log.i(TAG, "requestPermissionFollowUp createCenteredCameraPreview");
-        if (parentLayout != null) {
-            previewHolder = createCenteredCameraPreview(getActivity());
-            parentLayout.addView(previewHolder, 0);
-        } else {
-            throw new AssertionError("parentLayout is NULL -- while it should not be");
         }
     }
 }

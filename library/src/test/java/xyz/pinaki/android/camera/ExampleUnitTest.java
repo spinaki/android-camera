@@ -1,4 +1,4 @@
-package xyz.pinaki.androidcamera;
+package xyz.pinaki.android.camera;
 
 import org.junit.Test;
 

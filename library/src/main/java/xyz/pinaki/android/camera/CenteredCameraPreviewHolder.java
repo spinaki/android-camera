@@ -1,4 +1,4 @@
-package xyz.pinaki.androidcamera;
+package xyz.pinaki.android.camera;
 
 /**
  * Created by pinaki on 9/14/16.
@@ -10,7 +10,6 @@ import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
 import android.util.Log;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -26,16 +25,14 @@ import java.util.List;
  */
 @SuppressWarnings("deprecation")
 /* package */ class CenteredCameraPreviewHolder extends ViewGroup implements SurfaceHolder.Callback {
-    private final String TAG = CameraFragment.class.getSimpleName();
+    private final String TAG = CenteredCameraPreviewHolder.class.getSimpleName();
     SurfaceView surfaceView;
-    SurfaceHolder surfaceHolder;
     Size previewSize;
     Size pictureSize;
     Camera camera;
     Activity activity;
-    int cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
-    private int displayOrientation = 0;
-    private int layoutOrientation = 0;
+    int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+    RotationEventListener rotationEventListener;
     // This flag is required to handle the case when the capture icon is tapped twice simultaneously.
     // Without the flag capture will be invoke again before the previous onPictureTaken call completed.
     // resulting in "RuntimeException takePicture failed" in android.hardware.Camera.takePicture(Camera.java:1436)
@@ -45,13 +42,13 @@ import java.util.List;
         super(context);
     }
 
-    public CenteredCameraPreviewHolder(Activity activity) {
+    /* package */ CenteredCameraPreviewHolder(Activity activity, RotationEventListener rListener) {
         super(activity);
         this.activity = activity;
-        addSurfaceView();
+        this.rotationEventListener = rListener;
     }
 
-    private void addSurfaceView() {
+    /* package */ void addSurfaceView() {
         Log.i(TAG, "addSurfaceView");
         if (surfaceView != null) {
             removeView(surfaceView);
@@ -61,19 +58,17 @@ import java.util.List;
         addView(surfaceView);
         // Install a SurfaceHolder.Callback so we get notified when the
         // underlying surface is created and destroyed.
-        surfaceHolder = surfaceView.getHolder();
+        SurfaceHolder surfaceHolder = surfaceView.getHolder();
         surfaceHolder.addCallback(this);
         surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
     }
 
-    public void unsetCamera() {
-        Log.i(TAG, "unsetCamera");
+    /* package */ void unsetCamera() {
         camera = null;
         cameraId = 0;
     }
 
-    public void setCamera(Camera camera, int cameraId) {
-        Log.i(TAG, "setCamera");
+    /* package */ void setCamera(Camera camera, int cameraId) {
         this.camera = camera;
         this.cameraId = cameraId;
     }
@@ -120,8 +115,6 @@ import java.util.List;
                     previewHeight = previewSize.height;
                 }
             }
-//            Log.i(TAG, "Available width = " + availableWidth + ", height = " + availableHeight);
-//            Log.i(TAG, "Preview Width = " + previewWidth + ", Height = " + previewHeight);
             float factH = (float) availableHeight  / previewHeight ;
             float factW = (float) availableWidth / previewWidth;
             float fact = factH < factW ? factH : factW;
@@ -175,6 +168,7 @@ import java.util.List;
                     parameters.setPictureSize(pictureSize.width, pictureSize.height);
                 }
                 camera.setParameters(parameters);
+                // this is necessary  for the preview to have correct orientation / aspect ratio.
                 configureOrientationParams();
                 requestLayout();
                 startCameraPreview();
@@ -182,9 +176,9 @@ import java.util.List;
                 Log.i(TAG, "RuntimeException caused by getParameters in surfaceChanged", exception);
             }
         }
-
     }
 
+    // http://stackoverflow.com/questions/19577299/android-camera-preview-stretched
     private Size getOptimalPreviewSize(List<Size> sizes, int targetWidth, int targetHeight) {
         final double ASPECT_TOLERANCE = 0.01;
         double targetRatio = (double) targetWidth / targetHeight;
@@ -228,7 +222,7 @@ import java.util.List;
         return optimalSize;
     }
 
-    /* package */ synchronized void startCameraPreview() {
+    /* package */ void startCameraPreview() {
         Log.i(TAG, "startCameraPreview");
         if (camera != null ) {
             Log.i(TAG, "startCameraPreview in If Block");
@@ -251,45 +245,8 @@ import java.util.List;
     private void configureOrientationParams() {
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         Camera.getCameraInfo(cameraId, cameraInfo);
-        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
-        int degrees  = 0;
-        switch (rotation) {
-            case Surface.ROTATION_0:
-                degrees = 0;
-                break;
-
-            case Surface.ROTATION_90:
-                degrees = 90;
-                break;
-
-            case Surface.ROTATION_180:
-                degrees = 180;
-                break;
-
-            case Surface.ROTATION_270:
-                degrees = 270;
-                break;
-        }
-        int displayOrientation = 0;
-        if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            displayOrientation = (cameraInfo.orientation + degrees) % 360;
-            displayOrientation = (360 - displayOrientation) % 360;
-        } else {
-            displayOrientation = (cameraInfo.orientation - degrees + 360) % 360;
-        }
-        this.displayOrientation = displayOrientation;
-        this.layoutOrientation  = degrees;
-//        Log.i(TAG, "cameraInfo.orientation: " + cameraInfo.orientation + ", getDefaultDisplay.degrees: " + degrees);
-//        Log.i(TAG, "configureOrientationParams, displayOrientation: " + displayOrientation);
-        camera.setDisplayOrientation(displayOrientation);
-    }
-
-    /*package*/ final int getDisplayOrientation() {
-        return this.displayOrientation;
-    }
-
-    /*package*/ final int getLayoutOrientation() {
-        return this.layoutOrientation;
+        rotationEventListener.onRotationChanged(activity, cameraInfo);
+        camera.setDisplayOrientation(rotationEventListener.getCameraDisplayRotation());
     }
 
     /*package*/ final boolean getSafeToTakePicture() {
