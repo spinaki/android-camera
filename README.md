@@ -3,6 +3,12 @@ Lightweight Library for integrating the Camera sensor on your Android apps. The 
 invoking the correct API --  the deprecated `android.hardware.Camera` or the new `android.hardware.Camera2`. You get a
 generated image in the bitmap format which you can save (as JPEGs etc) or render in your apps. The returned bitmap is
  guaranteed to have the correct orientation and resolution.
+## Getting Started
+Add the library dependency to your `build.gradle`.
+~~~~
+compile 'xyz.pinaki.android:camera:1.0.0'
+~~~~
+Checkout the example app built using this library `app/src/main/java/xyz/pinaki/androidcamera/example`
 ## Why This Library
 Not all hardware supports Camera2.
 Event if they are post Android 21, the cameras might not support the new `Camera2` API. Or even if one of the cameras
