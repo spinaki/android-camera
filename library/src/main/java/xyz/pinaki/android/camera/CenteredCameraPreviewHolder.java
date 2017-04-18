@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.graphics.Point;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
@@ -57,6 +58,7 @@ import java.util.List;
     Activity activity;
     int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
     RotationEventListener rotationEventListener;
+    DeviceOrientationListener orientationListener;
     private boolean isCamera2 = false;
     CameraCaptureSession mCaptureSession;
     Handler cameraHandler;
@@ -77,11 +79,13 @@ import java.util.List;
         this.rotationEventListener = rListener;
     }
 
-    /* package */ CenteredCameraPreviewHolder(Activity activity, RotationEventListener rListener, boolean isCamera2,
+    /* package */ CenteredCameraPreviewHolder(Activity activity, RotationEventListener rListener,
+                                              DeviceOrientationListener dOrientationListener, boolean isCamera2,
                                               Handler backgroundHandler, CameraCallback cameraCallback) {
         this(activity, rListener);
         this.isCamera2 = isCamera2;
         cameraHandler = backgroundHandler;
+        orientationListener = dOrientationListener;
         this.cameraCallback = cameraCallback;
     }
 
@@ -536,14 +540,36 @@ import java.util.List;
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
             Log.i(TAG, "CapturedImageSaver, bytes size: " + bytes.length);
+            // this should be sent to the handler to do the correct thing.
             final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(bytes, 800);
+            // fix the bitmap
+            Matrix matrix = new Matrix();
+            // check if camera facing front:
+            CameraManager cameraManager = (CameraManager) activity.getSystemService(Context.CAMERA_SERVICE);
+            boolean facingFront = false;
+            try {
+                CameraCharacteristics c = cameraManager.getCameraCharacteristics(cameraDevice.getId());
+                facingFront = c.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT;
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+            // FIX THIS
+            if (facingFront) {
+                float[] mirrorY = {-1, 0, 0, 0, 1, 0, 0, 0, 1};
+                Matrix matrixMirrorY = new Matrix();
+                matrixMirrorY.setValues(mirrorY);
+                matrix.postConcat(matrixMirrorY);
+            }
+            final Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix,
+                    false);
+//            bitmap.recycle(); // WHY IS THIS FAILING
             Handler uiHandler = new Handler(Looper.getMainLooper());
             uiHandler.post(new Runnable() {
                 @Override
                 public void run() {
 //                     render the camera image back to the UI.
                     if (cameraCallback != null) {
-                        cameraCallback.onBitmapProcessed(bitmap);
+                        cameraCallback.onBitmapProcessed(rotatedBitmap);
                     }
                 }
             });

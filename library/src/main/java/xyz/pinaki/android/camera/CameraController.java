@@ -29,7 +29,7 @@ public class CameraController {
         return SingletonHolder.INSTANCE;
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+
     public void launch(AppCompatActivity activity, int containerID) {
         if (shouldFixOrientation) {
             int orientation = activity.getResources().getConfiguration().orientation;

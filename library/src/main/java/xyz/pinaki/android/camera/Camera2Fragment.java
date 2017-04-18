@@ -46,6 +46,7 @@ public class Camera2Fragment extends Fragment {
     CenteredCameraPreviewHolder previewHolder;
     RelativeLayout parentLayout;
     private RotationEventListener rotationEventListener = new RotationEventListener();
+    private DeviceOrientationListener orientationListener;
     View previewContainer;
     ImageView previewImage;
     private final CameraCallback cameraCallback = new CameraCallback() {
@@ -65,6 +66,8 @@ public class Camera2Fragment extends Fragment {
             Log.i(TAG, "onBitmapProcessed");
             previewContainer.setVisibility(View.VISIBLE);
             previewImage.setImageBitmap(bitmap);
+//            String fName = BitmapUtils.compressedImageFromBitmap(bitmap, "test-orientation.jpg");
+//            Log.i(TAG, "saved file: " + fName);
         }
     };
 
@@ -109,7 +112,7 @@ public class Camera2Fragment extends Fragment {
                 switchCamera();
             }
         });
-
+        orientationListener = new DeviceOrientationListener(getActivity());
         View shutterIcon = view.findViewById(R.id.shutter);
         shutterIcon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -118,10 +121,14 @@ public class Camera2Fragment extends Fragment {
                 if ( previewHolder != null && previewHolder.getCaptureSession() != null && previewHolder
                         .getImageReader() != null) {
                     Log.i(TAG, "shutter clicked if block");
+                    orientationListener.rememberOrientation();
                     try {
                         CaptureRequest.Builder requester = camera.createCaptureRequest(CameraDevice
                                 .TEMPLATE_STILL_CAPTURE);
                         requester.addTarget(previewHolder.getImageReader().getSurface());
+                        CameraManager manager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
+                        CameraCharacteristics c =  manager.getCameraCharacteristics(camera.getId());
+                        requester.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(c));
                         CameraCaptureSession.CaptureCallback captureCallback
                                 = new CameraCaptureSession.CaptureCallback() {
 
@@ -150,6 +157,27 @@ public class Camera2Fragment extends Fragment {
         });
     }
 
+    private int getJpegOrientation(CameraCharacteristics c) {
+//        if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN) return 0;
+        int sensorOrientation = c.get(CameraCharacteristics.SENSOR_ORIENTATION);
+
+        // Round device orientation to a multiple of 90
+//        deviceOrientation = (deviceOrientation + 45) / 90 * 90;
+        int deviceOrientation = orientationListener.getRememberedOrientation();
+
+        // Reverse device orientation for front-facing cameras
+        boolean facingFront = c.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT;
+        if (facingFront) {
+            deviceOrientation = -deviceOrientation;
+        }
+
+        // Calculate desired JPEG orientation relative to camera orientation to make
+        // the image upright relative to the device orientation
+        int jpegOrientation = (sensorOrientation + deviceOrientation + 360) % 360;
+
+        return jpegOrientation;
+    }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -157,12 +185,14 @@ public class Camera2Fragment extends Fragment {
         cameraHandlerThread.start();
         cameraHandler = new Handler(cameraHandlerThread.getLooper());
         uiHandler = new Handler(Looper.getMainLooper());
+        orientationListener.enable();
         openCamera();
     }
 
     @Override
     public void onPause() {
         super.onPause();
+        orientationListener.disable();
         if (camera != null) {
             camera.close();
             camera = null;
@@ -233,7 +263,7 @@ public class Camera2Fragment extends Fragment {
 
         private CenteredCameraPreviewHolder createCenteredCameraPreview(Activity activity) {
             CenteredCameraPreviewHolder previewHolder = new CenteredCameraPreviewHolder(activity,
-                    rotationEventListener, true, cameraHandler, cameraCallback);
+                    rotationEventListener, orientationListener, true, cameraHandler, cameraCallback);
             previewHolder.setBackgroundColor(Color.BLACK);
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams
                     .MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
