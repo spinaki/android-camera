@@ -528,18 +528,19 @@ import java.util.List;
         /**
          * The image to save.
          */
-        private Image mCapture;
+        private Image image;
 
         public CapturedImageSaver(Image capture) {
-            mCapture = capture;
+            image = capture;
         }
 
         @Override
         public void run() {
-            ByteBuffer buffer = mCapture.getPlanes()[0].getBuffer();
+            ByteBuffer buffer = image.getPlanes()[0].getBuffer();
             byte[] bytes = new byte[buffer.remaining()];
             buffer.get(bytes);
             Log.i(TAG, "CapturedImageSaver, bytes size: " + bytes.length);
+            image.close();
             // this should be sent to the handler to do the correct thing.
             final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(bytes, 800);
             // fix the bitmap
