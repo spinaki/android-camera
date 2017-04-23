@@ -68,8 +68,10 @@ public class CameraController {
                 if ( hardwareSupport == null ) {
                     return false;
                 }
-                if (hardwareSupport == CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY || hardwareSupport ==
-                        CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LIMITED) {
+                if (hardwareSupport == CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY ) {
+                    return false;
+                }
+                if (hardwareSupport == CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LIMITED) {
                     return false;
                 }
             }
