@@ -102,9 +102,10 @@ import android.util.Log;
                 rotation = (rotation + orientationListener.getRememberedOrientation() +
                         rotationEventListener.getDeviceDisplayRotation()) % 360;
                 matrix.postRotate(rotation);
+                // https://developer.android.com/reference/android/graphics/Bitmap.html#createBitmap(android.graphics.Bitmap, int, int, int, int)
+                // "https://developer.android.com/reference/android/graphics/Bitmap.html#createBitmap(android.graphics.Bitmap, int, int, int, int)"
                 final Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix,
                         false);
-                bitmap.recycle();
                 Handler uiHandler = new Handler(Looper.getMainLooper());
                 uiHandler.post(new Runnable() {
                     @Override
