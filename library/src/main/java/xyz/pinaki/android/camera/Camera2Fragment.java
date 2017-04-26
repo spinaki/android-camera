@@ -49,10 +49,10 @@ public class Camera2Fragment extends Fragment {
     private DeviceOrientationListener orientationListener;
     View previewContainer;
     ImageView previewImage;
-    private final CameraCallback cameraCallback = new CameraCallback() {
+    private final InternalCallback internalCallback = new InternalCallback() {
 
         @Override
-        public void onPictureTaken(Bitmap bitmap) {
+        public void onPictureTaken(Bitmap bitmap, byte[] bytes) {
             Assert.fail("Stub!");
         }
 
@@ -263,7 +263,7 @@ public class Camera2Fragment extends Fragment {
 
         private CenteredCameraPreviewHolder createCenteredCameraPreview(Activity activity) {
             CenteredCameraPreviewHolder previewHolder = new CenteredCameraPreviewHolder(activity,
-                    rotationEventListener, orientationListener, true, cameraHandler, cameraCallback);
+                    rotationEventListener, orientationListener, true, cameraHandler, internalCallback);
             previewHolder.setBackgroundColor(Color.BLACK);
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams
                     .MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);

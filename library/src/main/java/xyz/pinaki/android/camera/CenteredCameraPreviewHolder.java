@@ -63,7 +63,7 @@ import java.util.List;
     CameraCaptureSession mCaptureSession;
     Handler cameraHandler;
     private ImageReader mImageReader;
-    CameraCallback cameraCallback;
+    InternalCallback internalCallback;
     // This flag is required to handle the case when the capture icon is tapped twice simultaneously.
     // Without the flag capture will be invoke again before the previous onPictureTaken call completed.
     // resulting in "RuntimeException takePicture failed" in android.hardware.Camera.takePicture(Camera.java:1436)
@@ -81,12 +81,12 @@ import java.util.List;
 
     /* package */ CenteredCameraPreviewHolder(Activity activity, RotationEventListener rListener,
                                               DeviceOrientationListener dOrientationListener, boolean isCamera2,
-                                              Handler backgroundHandler, CameraCallback cameraCallback) {
+                                              Handler backgroundHandler, InternalCallback internalCallback) {
         this(activity, rListener);
         this.isCamera2 = isCamera2;
         cameraHandler = backgroundHandler;
         orientationListener = dOrientationListener;
-        this.cameraCallback = cameraCallback;
+        this.internalCallback = internalCallback;
     }
 
     /* package */ void addSurfaceView() {
@@ -569,8 +569,8 @@ import java.util.List;
                 @Override
                 public void run() {
 //                     render the camera image back to the UI.
-                    if (cameraCallback != null) {
-                        cameraCallback.onBitmapProcessed(rotatedBitmap);
+                    if (internalCallback != null) {
+                        internalCallback.onBitmapProcessed(rotatedBitmap);
                     }
                 }
             });

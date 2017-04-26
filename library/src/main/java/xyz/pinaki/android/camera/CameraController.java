@@ -3,12 +3,12 @@ package xyz.pinaki.android.camera;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
@@ -29,8 +29,15 @@ public class CameraController {
         return SingletonHolder.INSTANCE;
     }
 
+    public interface Callback {
+        void onCameraOpened();
+        void onCameraClosed();
+        void onPhotoTaken(byte[] data);
+        void onBitmapProcessed(Bitmap bitmap);
+    }
 
-    public void launch(AppCompatActivity activity, int containerID) {
+
+    public void launch(AppCompatActivity activity, int containerID, Callback callback) {
         if (shouldFixOrientation) {
             int orientation = activity.getResources().getConfiguration().orientation;
             if (orientation == Configuration.ORIENTATION_PORTRAIT) {
@@ -46,8 +53,10 @@ public class CameraController {
                     containerID, Camera2Fragment.newInstance(), "Camera2Fragment").commit();
         } else {
             Log.i(TAG, "Camera2 NOT Supported");
+            CameraFragment cameraFragment = CameraFragment.newInstance();
+            cameraFragment.setCallback(callback);
             activity.getSupportFragmentManager().beginTransaction().replace(
-                    containerID, CameraFragment.newInstance(), "Camera1Fragment").commit();
+                    containerID, cameraFragment, "Camera1Fragment").commit();
         }
 
     }
