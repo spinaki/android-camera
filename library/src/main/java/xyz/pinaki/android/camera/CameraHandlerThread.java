@@ -21,7 +21,7 @@ import android.util.Log;
     }
 
     //
-    /* package */ void openCamera(final int cameraId, final CameraCallback cameraCallback) {
+    /* package */ void openCamera(final int cameraId, final InternalCallback internalCallback) {
         if (workerHandler == null) {
             workerHandler = new Handler(getLooper());
         }
@@ -34,7 +34,7 @@ import android.util.Log;
                     uiHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            cameraCallback.onCameraOpen(camera);
+                            internalCallback.onCameraOpen(camera);
                         }
                     });
                 } catch (Exception e) {
@@ -45,20 +45,20 @@ import android.util.Log;
         });
     }
 
-    /* package*/ void capturePhoto(final Camera camera, final CameraCallback cameraCallback) {
+    /* package*/ void capturePhoto(final Camera camera, final InternalCallback internalCallback) {
         workerHandler.post(new Runnable() {
             @Override
             public void run() {
                 camera.takePicture(null, null, new Camera.PictureCallback() {
                     @Override
-                    public void onPictureTaken(byte[] bytes, Camera camera) {
+                    public void onPictureTaken(final byte[] bytes, Camera camera) {
                         final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(bytes, 800);
                         Handler uiHandler = new Handler(Looper.getMainLooper());
                         uiHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                if (cameraCallback != null) {
-                                    cameraCallback.onPictureTaken(bitmap);
+                                if (internalCallback != null) {
+                                    internalCallback.onPictureTaken(bitmap, bytes);
                                 }
                             }
                         });
@@ -69,7 +69,7 @@ import android.util.Log;
     }
 
     void processBitmap(final int cameraId, final Bitmap bitmap, final DeviceOrientationListener orientationListener,
-                       final RotationEventListener rotationEventListener, final CameraCallback cameraCallback) {
+                       final RotationEventListener rotationEventListener, final InternalCallback internalCallback) {
         workerHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -110,8 +110,8 @@ import android.util.Log;
                 uiHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        if (cameraCallback != null) {
-                            cameraCallback.onBitmapProcessed(rotatedBitmap);
+                        if (internalCallback != null) {
+                            internalCallback.onBitmapProcessed(rotatedBitmap);
                         }
                     }
                 });
