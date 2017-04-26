@@ -64,6 +64,7 @@ import java.util.List;
     Handler cameraHandler;
     private ImageReader mImageReader;
     InternalCallback internalCallback;
+    CameraController.Callback callback;
     // This flag is required to handle the case when the capture icon is tapped twice simultaneously.
     // Without the flag capture will be invoke again before the previous onPictureTaken call completed.
     // resulting in "RuntimeException takePicture failed" in android.hardware.Camera.takePicture(Camera.java:1436)
@@ -81,12 +82,14 @@ import java.util.List;
 
     /* package */ CenteredCameraPreviewHolder(Activity activity, RotationEventListener rListener,
                                               DeviceOrientationListener dOrientationListener, boolean isCamera2,
-                                              Handler backgroundHandler, InternalCallback internalCallback) {
+                                              Handler backgroundHandler, InternalCallback internalCallback,
+                                              CameraController.Callback callback) {
         this(activity, rListener);
         this.isCamera2 = isCamera2;
         cameraHandler = backgroundHandler;
         orientationListener = dOrientationListener;
         this.internalCallback = internalCallback;
+        this.callback = callback;
     }
 
     /* package */ void addSurfaceView() {
@@ -530,7 +533,7 @@ import java.util.List;
          */
         private Image image;
 
-        public CapturedImageSaver(Image capture) {
+        CapturedImageSaver(Image capture) {
             image = capture;
         }
 
@@ -541,6 +544,9 @@ import java.util.List;
             buffer.get(bytes);
             Log.i(TAG, "CapturedImageSaver, bytes size: " + bytes.length);
             image.close();
+            if (callback != null) {
+                callback.onPhotoTaken(bytes);
+            }
             // this should be sent to the handler to do the correct thing.
             final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(bytes, 800);
             // fix the bitmap

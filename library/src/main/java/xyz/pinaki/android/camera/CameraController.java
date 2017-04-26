@@ -9,6 +9,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
@@ -36,7 +37,6 @@ public class CameraController {
         void onBitmapProcessed(Bitmap bitmap);
     }
 
-
     public void launch(AppCompatActivity activity, int containerID, Callback callback) {
         if (shouldFixOrientation) {
             int orientation = activity.getResources().getConfiguration().orientation;
@@ -47,10 +47,13 @@ public class CameraController {
                 activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             }
         }
+
         if (isCamera2Supported(activity)) {
             Log.i(TAG, "Camera2 Supported");
+            Camera2Fragment camera2Fragment = Camera2Fragment.newInstance();
+            camera2Fragment.setCallback(callback);
             activity.getSupportFragmentManager().beginTransaction().replace(
-                    containerID, Camera2Fragment.newInstance(), "Camera2Fragment").commit();
+                    containerID, camera2Fragment, "Camera2Fragment").commit();
         } else {
             Log.i(TAG, "Camera2 NOT Supported");
             CameraFragment cameraFragment = CameraFragment.newInstance();

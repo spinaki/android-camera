@@ -49,6 +49,7 @@ public class Camera2Fragment extends Fragment {
     private DeviceOrientationListener orientationListener;
     View previewContainer;
     ImageView previewImage;
+    CameraController.Callback callback;
     private final InternalCallback internalCallback = new InternalCallback() {
 
         @Override
@@ -66,6 +67,9 @@ public class Camera2Fragment extends Fragment {
             Log.i(TAG, "onBitmapProcessed");
             previewContainer.setVisibility(View.VISIBLE);
             previewImage.setImageBitmap(bitmap);
+            if (callback != null) {
+                callback.onBitmapProcessed(bitmap);
+            }
 //            String fName = BitmapUtils.compressedImageFromBitmap(bitmap, "test-orientation.jpg");
 //            Log.i(TAG, "saved file: " + fName);
         }
@@ -77,6 +81,10 @@ public class Camera2Fragment extends Fragment {
 
     /* package */ static Camera2Fragment newInstance() {
         return new Camera2Fragment();
+    }
+
+    /* package */ void setCallback(CameraController.Callback callback) {
+        this.callback = callback;
     }
 
     @Override
@@ -193,10 +201,7 @@ public class Camera2Fragment extends Fragment {
     public void onPause() {
         super.onPause();
         orientationListener.disable();
-        if (camera != null) {
-            camera.close();
-            camera = null;
-        }
+        closeCamera();
         if (parentLayout != null) {
             parentLayout.removeView(previewHolder);
         }
@@ -257,13 +262,14 @@ public class Camera2Fragment extends Fragment {
                     previewHolder.addSurfaceView();
                     parentLayout.addView(previewHolder, 0);
                     previewHolder.setCamera(camera);
+                    callback.onCameraOpened();
                 }
             });
         }
 
         private CenteredCameraPreviewHolder createCenteredCameraPreview(Activity activity) {
             CenteredCameraPreviewHolder previewHolder = new CenteredCameraPreviewHolder(activity,
-                    rotationEventListener, orientationListener, true, cameraHandler, internalCallback);
+                    rotationEventListener, orientationListener, true, cameraHandler, internalCallback, callback);
             previewHolder.setBackgroundColor(Color.BLACK);
             RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams
                     .MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
@@ -274,15 +280,15 @@ public class Camera2Fragment extends Fragment {
         @Override
         public void onDisconnected(@NonNull CameraDevice cameraDevice) {
 //            mCameraOpenCloseLock.release();
-            cameraDevice.close();
-            camera = null;
+            camera = cameraDevice;
+            closeCamera();
         }
 
         @Override
         public void onError(@NonNull CameraDevice cameraDevice, int error) {
 //            mCameraOpenCloseLock.release();
-            cameraDevice.close();
-            camera = null;
+            camera = cameraDevice;
+            closeCamera();
             Activity activity = getActivity();
             if (null != activity) {
                 activity.finish();
@@ -297,16 +303,23 @@ public class Camera2Fragment extends Fragment {
             int lensFacing = characteristics.get(CameraCharacteristics.LENS_FACING) ==  CameraCharacteristics
                     .LENS_FACING_FRONT ? CameraCharacteristics.LENS_FACING_BACK : CameraCharacteristics
                     .LENS_FACING_FRONT;
-            if (camera != null) {
-                camera.close();
-                camera = null;
-            }
+            closeCamera();
             if (parentLayout != null ) {
                 parentLayout.removeView(previewHolder);
             }
             openCamera(lensFacing);
         } catch (CameraAccessException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void closeCamera() {
+        if (camera != null) {
+            camera.close();
+            camera = null;
+        }
+        if (callback != null) {
+            callback.onCameraClosed();
         }
     }
 }
