@@ -6,7 +6,7 @@ generated image in the bitmap format which you can save (as JPEGs etc) or render
 ## Getting Started
 Add the library dependency to your `build.gradle`.
 ~~~~
-compile 'xyz.pinaki.android:camera:1.0.0'
+compile 'xyz.pinaki.android:camera:1.0.1'
 ~~~~
 Checkout the example app built using this library `app/src/main/java/xyz/pinaki/androidcamera/example`
 ## Why This Library
