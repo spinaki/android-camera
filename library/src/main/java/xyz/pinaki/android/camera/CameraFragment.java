@@ -52,9 +52,13 @@ public class CameraFragment extends Fragment {
     View previewContainer;
     ImageView previewImage;
     private CameraHandlerThread cameraHandlerThread;
-    private final CameraCallback cameraCallback = new CameraCallback() {
+    private CameraController.Callback callback;
+    private final InternalCallback internalCallback = new InternalCallback() {
         @Override
-        public void onPictureTaken(Bitmap bitmap) {
+        public void onPictureTaken(Bitmap bitmap, byte[] bytes) {
+            if (callback != null) {
+                callback.onPhotoTaken(bytes);
+            }
             cameraHandlerThread.processBitmap(cameraId, bitmap,  orientationListener, rotationEventListener, this);
         }
 
@@ -65,6 +69,9 @@ public class CameraFragment extends Fragment {
             previewHolder.addSurfaceView();
             parentLayout.addView(previewHolder, 0);
             previewHolder.setCamera(camera, cameraId);
+            if (callback != null) {
+                callback.onCameraOpened();
+            }
         }
 
         @Override
@@ -72,6 +79,9 @@ public class CameraFragment extends Fragment {
             previewContainer.setVisibility(View.VISIBLE);
             previewImage.setImageBitmap(bitmap);
             previewHolder.startCameraPreview();
+            if (callback != null) {
+                callback.onBitmapProcessed(bitmap);
+            }
         }
     };
 
@@ -79,8 +89,12 @@ public class CameraFragment extends Fragment {
         // empty constructor
     }
 
-    public static CameraFragment newInstance() {
+    /* package */ static CameraFragment newInstance() {
         return new CameraFragment();
+    }
+
+    /* package */ void setCallback(CameraController.Callback callback) {
+        this.callback = callback;
     }
 
     // check if this device has a camera
@@ -100,7 +114,7 @@ public class CameraFragment extends Fragment {
             orientationListener.rememberOrientation();
             if (previewHolder.getSafeToTakePicture()) {
                 previewHolder.setSafeToTakePicture(false);
-                cameraHandlerThread.capturePhoto(camera, cameraCallback);
+                cameraHandlerThread.capturePhoto(camera, internalCallback);
             }
         } else {
             Log.i(TAG, "previewHolder is NULL");
@@ -109,7 +123,7 @@ public class CameraFragment extends Fragment {
 
 //    @Override
 //    public void onPictureTaken(byte[] data, Camera camera) {
-//        if (cameraCallback != null) {
+//        if (internalCallback != null) {
 //            Bitmap bitmap;
 //            if (shouldCreateLowresImage) {
 //                bitmap = BitmapUtils.createSampledBitmapFromBytes(data, COMPRESS_IMAGE_MAX_DIMENSION);
@@ -132,7 +146,7 @@ public class CameraFragment extends Fragment {
 //            matrix.postRotate(rotation);
 //            Log.i(TAG, "createBitmap: width: " + bitmap.getWidth() + ", height: " + bitmap.getHeight());
 //            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, false);
-//            cameraCallback.onPictureTaken(bitmap);
+//            internalCallback.onPictureTaken(bitmap);
 //            previewHolder.startCameraPreview(); // start preview in the background
 //        }
 //    }
@@ -156,7 +170,7 @@ public class CameraFragment extends Fragment {
                     if (camera != null) {
                         stopAndRelease();
                     }
-                    cameraHandlerThread.openCamera(cameraId, cameraCallback);
+                    cameraHandlerThread.openCamera(cameraId, internalCallback);
                 } catch (RuntimeException exception) {
                     Log.i(TAG, "Cannot open camera with id " + cameraId, exception);
                 }
@@ -174,6 +188,9 @@ public class CameraFragment extends Fragment {
         if (camera != null) {
             camera.release();
             camera = null;
+        }
+        if (callback != null) {
+            callback.onCameraClosed();
         }
     }
 
@@ -258,7 +275,7 @@ public class CameraFragment extends Fragment {
         return previewHolder;
     }
 
-    /* package */ void switchCamera() {
+    private void switchCamera() {
         cameraId = (cameraId == Camera.CameraInfo.CAMERA_FACING_BACK) ? Camera.CameraInfo.CAMERA_FACING_FRONT :
                 Camera.CameraInfo.CAMERA_FACING_BACK;
         Log.i(TAG, "switching to camera: " + cameraId);
