@@ -8,13 +8,50 @@ Add the library dependency to your `build.gradle`.
 ~~~~
 compile 'xyz.pinaki.android:camera:1.0.1'
 ~~~~
+The main entry point to this library is the singleton `CameraController` class. You can use the `getInstance()`
+method to get an instance object of the class. Start the camera using the `launch` method of this class which takes
+three arguments:
+```java
+launch(AppCompatActivity activity, int containerID, Callback callback)
+```
+* As the first arguement, pass the `Activity` from which this is launched.
+* The Camera is launched inside a `Fragment`. You will have to define a place in your layout file to launch the
+`Fragment`. The ID of this node in the layout file is the second argument. For instance, in the layout file within the
+demo app, we define a `FrameLayout` where the camera will be displayed.
+```xml
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_height="match_parent" android:layout_width="match_parent"
+                android:orientation="vertical">
+    <FrameLayout android:layout_width="match_parent"
+                 android:layout_height="match_parent"
+                 android:id="@+id/container">
+    </FrameLayout>
+</LinearLayout>
+```
+* The third argument is a callback object which notifies the caller about various lifecycle events of the `Camera`.
+It is an instance of the interface CAmeraController.Callback and you can add your own code in the object about what
+you wich to do when these lifecycle events are triggered.
+```java
+public interface Callback {
+        void onCameraOpened();
+        void onCameraClosed();
+        void onPhotoTaken(byte[] data);
+        void onBitmapProcessed(Bitmap bitmap);
+    }
+```
+
 Checkout the example app built using this library `app/src/main/java/xyz/pinaki/androidcamera/example`
+
 ## Why This Library
-Not all hardware supports Camera2.
+There are multiple issues with the camera libraries on Android.
+* Not all hardware supports Camera2.
 Event if they are post Android 21, the cameras might not support the new `Camera2` API. Or even if one of the cameras
  support it -- the other might not. During my search, I was not able to find a lightweight library, which enables
  developer capture an image from either of the cameras and easily save it. Hence, I created this library.
-
+* Orientation issues.
+* Rear vs Front Camera.
+* Handling the callbacks correctly in background thread.
+* Correct Aspect Ratio for Camera and Preview.
 ## Functionality of this library
 * Most [examples](https://developer.android.com/guide/topics/media/camera.html#custom-camera) for the android camera, used the main
  UI thread to open the camera. However, this is discouraged in the [docs](https://developer.android.com/training/camera/cameradirect.html#TaskOpenCamera). The idea is to use a background thread to invoke it -- since
