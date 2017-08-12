@@ -19,8 +19,8 @@ import android.util.Log;
 public class CameraController {
     private static String TAG = CameraController.class.getSimpleName();
     private final boolean shouldFixOrientation = true;
-    private Camera2Fragment camera2Fragment;
-    private CameraFragment cameraFragment;
+    private Camera2FragmentOld camera2FragmentOld;
+    private CameraFragmentOld cameraFragmentOld;
     private static class SingletonHolder {
         private static final CameraController INSTANCE = new CameraController();
     }
@@ -51,25 +51,25 @@ public class CameraController {
 
         if (isCamera2Supported(activity) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Log.i(TAG, "Camera2 Supported");
-            camera2Fragment = Camera2Fragment.newInstance();
-            camera2Fragment.setCallback(callback);
+            camera2FragmentOld = Camera2FragmentOld.newInstance();
+            camera2FragmentOld.setCallback(callback);
             activity.getSupportFragmentManager().beginTransaction().replace(
-                    containerID, camera2Fragment, "Camera2Fragment").commit();
+                    containerID, camera2FragmentOld, "Camera2FragmentOld").commit();
         } else {
             Log.i(TAG, "Camera2 NOT Supported");
-            cameraFragment = CameraFragment.newInstance();
-            cameraFragment.setCallback(callback);
+            cameraFragmentOld = CameraFragmentOld.newInstance();
+            cameraFragmentOld.setCallback(callback);
             activity.getSupportFragmentManager().beginTransaction().replace(
-                    containerID, cameraFragment, "Camera1Fragment").commit();
+                    containerID, cameraFragmentOld, "Camera1Fragment").commit();
         }
     }
 
     public void stop() {
-        if (camera2Fragment != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            camera2Fragment.setCallback(null);
+        if (camera2FragmentOld != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            camera2FragmentOld.setCallback(null);
         }
-        if (cameraFragment != null) {
-            cameraFragment.setCallback(null);
+        if (cameraFragmentOld != null) {
+            cameraFragmentOld.setCallback(null);
         }
     }
 

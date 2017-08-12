@@ -36,9 +36,9 @@ import xyz.pinaki.androidcamera.R;
  */
 
 @SuppressWarnings("deprecation")
-public class CameraFragment extends Fragment {
+public class CameraFragmentOld extends Fragment {
     private static final int COMPRESS_IMAGE_MAX_DIMENSION = 800;
-    private static final String TAG = CameraFragment.class.getSimpleName();
+    private static final String TAG = CameraFragmentOld.class.getSimpleName();
     private static final int REQUEST_CAMERA = 0;
     private Camera camera = null;
     // necessary for correctly rotating the captured bitmap so that exported image / view has the correct orientation--
@@ -85,12 +85,12 @@ public class CameraFragment extends Fragment {
         }
     };
 
-    public CameraFragment() {
+    public CameraFragmentOld() {
         // empty constructor
     }
 
-    /* package */ static CameraFragment newInstance() {
-        return new CameraFragment();
+    /* package */ static CameraFragmentOld newInstance() {
+        return new CameraFragmentOld();
     }
 
     /* package */ void setCallback(CameraController.Callback callback) {

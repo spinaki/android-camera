@@ -38,8 +38,8 @@ import xyz.pinaki.androidcamera.R;
  * Created by pinaki on 3/29/17.
  */
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-public class Camera2Fragment extends Fragment {
-    private static final String TAG = Camera2Fragment.class.getSimpleName();
+public class Camera2FragmentOld extends Fragment {
+    private static final String TAG = Camera2FragmentOld.class.getSimpleName();
     CameraHandlerThread cameraHandlerThread;
     Handler cameraHandler, uiHandler;
     private CameraDevice camera;
@@ -75,12 +75,12 @@ public class Camera2Fragment extends Fragment {
         }
     };
 
-    public Camera2Fragment() {
+    public Camera2FragmentOld() {
         // empty constructor
     }
 
-    /* package */ static Camera2Fragment newInstance() {
-        return new Camera2Fragment();
+    /* package */ static Camera2FragmentOld newInstance() {
+        return new Camera2FragmentOld();
     }
 
     /* package */ void setCallback(CameraController.Callback callback) {
