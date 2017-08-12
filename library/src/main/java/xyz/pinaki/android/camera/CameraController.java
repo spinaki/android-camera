@@ -16,6 +16,7 @@ import android.util.Log;
  * Created by pinaki on 3/6/17.
  */
 // singleton manager class
+// TODO: Add the runtime permissions here or in BaseCamera ?
 public class CameraController {
     private static String TAG = CameraController.class.getSimpleName();
     private final boolean shouldFixOrientation = true;
