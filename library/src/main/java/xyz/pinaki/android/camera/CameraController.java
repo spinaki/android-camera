@@ -9,7 +9,6 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.os.Build;
-import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
@@ -20,6 +19,8 @@ import android.util.Log;
 public class CameraController {
     private static String TAG = CameraController.class.getSimpleName();
     private final boolean shouldFixOrientation = true;
+    private Camera2Fragment camera2Fragment;
+    private CameraFragment cameraFragment;
     private static class SingletonHolder {
         private static final CameraController INSTANCE = new CameraController();
     }
@@ -48,20 +49,28 @@ public class CameraController {
             }
         }
 
-        if (isCamera2Supported(activity)) {
+        if (isCamera2Supported(activity) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Log.i(TAG, "Camera2 Supported");
-            Camera2Fragment camera2Fragment = Camera2Fragment.newInstance();
+            camera2Fragment = Camera2Fragment.newInstance();
             camera2Fragment.setCallback(callback);
             activity.getSupportFragmentManager().beginTransaction().replace(
                     containerID, camera2Fragment, "Camera2Fragment").commit();
         } else {
             Log.i(TAG, "Camera2 NOT Supported");
-            CameraFragment cameraFragment = CameraFragment.newInstance();
+            cameraFragment = CameraFragment.newInstance();
             cameraFragment.setCallback(callback);
             activity.getSupportFragmentManager().beginTransaction().replace(
                     containerID, cameraFragment, "Camera1Fragment").commit();
         }
+    }
 
+    public void stop() {
+        if (camera2Fragment != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            camera2Fragment.setCallback(null);
+        }
+        if (cameraFragment != null) {
+            cameraFragment.setCallback(null);
+        }
     }
 
 
