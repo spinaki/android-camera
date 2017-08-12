@@ -5,7 +5,6 @@ package xyz.pinaki.android.camera;
  */
 
 class Camera1 extends BaseCamera {
-    CameraView cameraView;
     @Override
     public boolean start() {
         return false;

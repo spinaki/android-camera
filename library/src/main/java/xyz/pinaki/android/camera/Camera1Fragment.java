@@ -34,7 +34,8 @@ public class Camera1Fragment extends Fragment implements CameraView {
             public void onClick(View view) {
                 // TODO: Fix this
 //                takePicture();
-                cameraPresenter.takePicture();
+//                cameraPresenter.takePicture();
+                shutterClicked();
             }
         });
         View cameraSwitch = view.findViewById(R.id.switch_cam);
@@ -43,7 +44,7 @@ public class Camera1Fragment extends Fragment implements CameraView {
             public void onClick(View view) {
                 // TODO: fix this cameraPresenter
 //                stopAndRelease();
-//                switchCamera();
+                switchCameraClicked();
             }
         });
 
@@ -102,5 +103,26 @@ public class Camera1Fragment extends Fragment implements CameraView {
     @Override
     public void setPresenter(@NonNull CameraPresenter c) {
         cameraPresenter = c;
+    }
+
+    @Override
+    public void shutterClicked() {
+        cameraPresenter.takePicture();
+    }
+
+    @Override
+    public void switchCameraClicked() {
+        // TODO: fix
+        cameraPresenter.setFacing(0);
+    }
+
+    @Override
+    public void switchFlashClicked() {
+
+    }
+
+    @Override
+    public void focus() {
+
     }
 }

@@ -8,4 +8,8 @@ package xyz.pinaki.android.camera;
 interface CameraView {
     // the fragments for camera1 and 2 should implement this.
     void setPresenter(CameraPresenter c);
+    void shutterClicked();
+    void switchCameraClicked();
+    void switchFlashClicked();
+    void focus();
 }
