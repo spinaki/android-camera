@@ -12,11 +12,11 @@ import android.util.Log;
  * Created by pinaki on 3/20/17.
  */
 @SuppressWarnings("deprecation")
-/* package */ class CameraHandlerThread extends HandlerThread {
-    private static final String TAG = CameraHandlerThread.class.getSimpleName();
+/* package */ class CameraHandlerThreadOld extends HandlerThread {
+    private static final String TAG = CameraHandlerThreadOld.class.getSimpleName();
     private Handler workerHandler = null;
 
-    /* package */ CameraHandlerThread() {
+    /* package */ CameraHandlerThreadOld() {
         super(TAG);
     }
 

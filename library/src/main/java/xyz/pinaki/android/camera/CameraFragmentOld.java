@@ -51,7 +51,7 @@ public class CameraFragmentOld extends Fragment {
     RelativeLayout parentLayout;
     View previewContainer;
     ImageView previewImage;
-    private CameraHandlerThread cameraHandlerThread;
+    private CameraHandlerThreadOld cameraHandlerThreadOld;
     private CameraController.Callback callback;
     private final InternalCallback internalCallback = new InternalCallback() {
         @Override
@@ -59,7 +59,7 @@ public class CameraFragmentOld extends Fragment {
             if (callback != null) {
                 callback.onPhotoTaken(bytes);
             }
-            cameraHandlerThread.processBitmap(cameraId, bitmap,  orientationListener, rotationEventListener, this);
+            cameraHandlerThreadOld.processBitmap(cameraId, bitmap,  orientationListener, rotationEventListener, this);
         }
 
         @Override
@@ -114,7 +114,7 @@ public class CameraFragmentOld extends Fragment {
             orientationListener.rememberOrientation();
             if (previewHolder.getSafeToTakePicture()) {
                 previewHolder.setSafeToTakePicture(false);
-                cameraHandlerThread.capturePhoto(camera, internalCallback);
+                cameraHandlerThreadOld.capturePhoto(camera, internalCallback);
             }
         } else {
             Log.i(TAG, "previewHolder is NULL");
@@ -154,8 +154,8 @@ public class CameraFragmentOld extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        cameraHandlerThread = new CameraHandlerThread();
-        cameraHandlerThread.start();
+        cameraHandlerThreadOld = new CameraHandlerThreadOld();
+        cameraHandlerThreadOld.start();
         openCamera();
         orientationListener.enable();
     }
@@ -170,7 +170,7 @@ public class CameraFragmentOld extends Fragment {
                     if (camera != null) {
                         stopAndRelease();
                     }
-                    cameraHandlerThread.openCamera(cameraId, internalCallback);
+                    cameraHandlerThreadOld.openCamera(cameraId, internalCallback);
                 } catch (RuntimeException exception) {
                     Log.i(TAG, "Cannot open camera with id " + cameraId, exception);
                 }
@@ -200,8 +200,8 @@ public class CameraFragmentOld extends Fragment {
         super.onPause();
         stopAndRelease();
         orientationListener.disable();
-        if (cameraHandlerThread != null) {
-            cameraHandlerThread.quit();
+        if (cameraHandlerThreadOld != null) {
+            cameraHandlerThreadOld.quit();
         }
     }
 

@@ -40,7 +40,7 @@ import xyz.pinaki.androidcamera.R;
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class Camera2FragmentOld extends Fragment {
     private static final String TAG = Camera2FragmentOld.class.getSimpleName();
-    CameraHandlerThread cameraHandlerThread;
+    CameraHandlerThreadOld cameraHandlerThreadOld;
     Handler cameraHandler, uiHandler;
     private CameraDevice camera;
     CenteredCameraPreviewHolder previewHolder;
@@ -189,9 +189,9 @@ public class Camera2FragmentOld extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        cameraHandlerThread = new CameraHandlerThread();
-        cameraHandlerThread.start();
-        cameraHandler = new Handler(cameraHandlerThread.getLooper());
+        cameraHandlerThreadOld = new CameraHandlerThreadOld();
+        cameraHandlerThreadOld.start();
+        cameraHandler = new Handler(cameraHandlerThreadOld.getLooper());
         uiHandler = new Handler(Looper.getMainLooper());
         orientationListener.enable();
         openCamera();
@@ -205,9 +205,9 @@ public class Camera2FragmentOld extends Fragment {
         if (parentLayout != null) {
             parentLayout.removeView(previewHolder);
         }
-        cameraHandlerThread.quitSafely();
+        cameraHandlerThreadOld.quitSafely();
         try {
-            cameraHandlerThread.join();
+            cameraHandlerThreadOld.join();
         } catch (InterruptedException ex) {
             Log.e(TAG, "Background worker thread was interrupted while joined", ex);
         }
