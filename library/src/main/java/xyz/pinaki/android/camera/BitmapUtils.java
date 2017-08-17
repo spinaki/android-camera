@@ -1,18 +1,8 @@
 package xyz.pinaki.android.camera;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
-import android.os.Environment;
-import android.text.TextUtils;
 import android.util.Log;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 
 /**
  * BitmapUtils provides all the util function required for bitmap modifications.
@@ -20,71 +10,6 @@ import java.io.IOException;
  * @author Rekha
  */
 /* package */ class BitmapUtils {
-    private static final int JPEG_COMPRESSION_QUALITY = 70;
-    private static final String TAG = BitmapUtils.class.getSimpleName();
-
-    public static GradientDrawable getRoundedRectangleShape(Context context, int color, boolean isSelected) {
-        GradientDrawable shape = new GradientDrawable();
-        float cornerRadius = 30.0f;
-        if (isSelected) {
-            shape.setShape(GradientDrawable.RECTANGLE);
-            int radius = (int) (cornerRadius * context.getResources().getDisplayMetrics().density);
-            shape.setCornerRadius(radius);
-            shape.setColor(color);
-        } else {
-            shape.setColor(Color.TRANSPARENT);
-        }
-        return shape;
-    }
-
-    // to find the correct file via adb pull: http://stackoverflow.com/questions/15641848/cannot-find-storage-emulated-0-folder-of-nexus-7-in-eclipse
-    /* package */ static String compressedImageFromBitmap(Bitmap bitmap, String fileName) {
-        try {
-            File file = createTempFile(fileName);
-            if (file == null) {
-                return null;
-            }
-            Log.i(TAG, file.getAbsolutePath());
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_COMPRESSION_QUALITY, bos);
-            byte[] bitmapData = bos.toByteArray();
-            //write the bytes in file
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            fileOutputStream.write(bitmapData);
-            fileOutputStream.flush();
-            fileOutputStream.close();
-            return file.getAbsolutePath();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private static File createTempFile(String fileName) {
-        try {
-            File folder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/pinaki_camera");
-            folder.mkdirs();
-            if (TextUtils.isEmpty(fileName)) {
-                fileName = "tmp_img123.jpeg";
-            }
-
-            File file = new File(folder, fileName);
-            if (file.exists()) {
-                file.delete();
-            }
-
-            if (file.createNewFile()) {
-                file.createNewFile();
-            }
-
-            return file;
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     // ref - https://developer.android.com/training/displaying-bitmaps/load-bitmap.html
     /* package */ static Bitmap createSampledBitmapFromBytes(byte[] jpegByteArray, int maxDimensionSize) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
