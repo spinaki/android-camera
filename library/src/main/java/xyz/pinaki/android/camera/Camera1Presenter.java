@@ -37,15 +37,14 @@ class Camera1Presenter implements CameraPresenter {
 
     @Override
     public void onDestroy() {
-        Log.i("pinaki-Camera1Presenter", "stop thread");
+        Log.i("pinaki-Camera1Presenter", "quit thread");
         backgroundThread.quit();
         backgroundThread.interrupt();
         backgroundThread = null;
     }
 
     @Override
-    public boolean start() {
-
+    public boolean onResume() {
 //        backgroundHandler = new Handler(backgroundThread.getLooper());
         Message m = Message.obtain();
         m.what = Camera1.CAMERA1_ACTION_OPEN;
@@ -76,7 +75,7 @@ class Camera1Presenter implements CameraPresenter {
     }
 
     @Override
-    public void stop() {
+    public void onPause() {
         if (camera1 != null) {
             camera1.stop();
         }

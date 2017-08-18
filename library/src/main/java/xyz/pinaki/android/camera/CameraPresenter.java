@@ -7,8 +7,8 @@ package xyz.pinaki.android.camera;
 interface CameraPresenter {
     void onCreate();
     void onDestroy();
-    boolean start();
-    void stop();
+    boolean onResume();
+    void onPause();
     boolean isCameraOpened();
     void setFacing(int facing);
     int getFacing();

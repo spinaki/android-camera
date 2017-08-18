@@ -77,10 +77,10 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
         super.onResume();
         // TODO: fix this
 //        cameraHandlerThreadOld = new CameraHandlerThreadOld();
-//        cameraHandlerThreadOld.start();
+//        cameraHandlerThreadOld.onResume();
 //        openCamera();
 //        orientationListener.enable();
-        cameraPresenter.start();
+        cameraPresenter.onResume();
     }
 
     @Override
@@ -88,7 +88,7 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
         Log.i(TAG, "onPause");
         super.onPause();
         // TODO: fic this
-        cameraPresenter.stop();
+        cameraPresenter.onPause();
 //        stopAndRelease();
 //        orientationListener.disable();
 //        if (cameraHandlerThreadOld != null) {
