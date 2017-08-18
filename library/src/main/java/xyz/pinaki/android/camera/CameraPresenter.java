@@ -5,6 +5,8 @@ package xyz.pinaki.android.camera;
  * Presenter in the MVP pattern
  */
 interface CameraPresenter {
+    void onCreate();
+    void onDestroy();
     boolean start();
     void stop();
     boolean isCameraOpened();

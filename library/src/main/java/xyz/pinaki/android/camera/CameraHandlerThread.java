@@ -26,18 +26,17 @@ final class CameraHandlerThread extends HandlerThread {
     @Override
     protected void onLooperPrepared() {
         super.onLooperPrepared();
-        handler = new CameraHandler(getLooper(), uiCallback);
+//        handler = new CameraHandler(getLooper(), uiCallback);
     }
 
-    private void prepareHandler() {
+    void prepareHandler() {
         if (handler == null) {
             handler = new CameraHandler(getLooper(), uiCallback);
         }
     }
 
     void queueMessage(Message msg) {
-        prepareHandler();
-        if (handler != null) {
+        if (handler != null && isAlive()) {
             handler.sendMessage(msg);
         }
     }

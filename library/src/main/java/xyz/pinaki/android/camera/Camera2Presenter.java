@@ -11,6 +11,16 @@ class Camera2Presenter implements CameraPresenter {
     }
 
     @Override
+    public void onCreate() {
+
+    }
+
+    @Override
+    public void onDestroy() {
+
+    }
+
+    @Override
     public boolean start() {
         return false;
     }

@@ -19,22 +19,39 @@ import android.util.Log;
 
 class Camera1Presenter implements CameraPresenter {
     private CameraView cameraView;
+    private Camera1 camera1;
     // TODO: should this be implemented by the Presenter or something else ?
     private CameraHandlerThread backgroundThread;
 //    Handler backgroundHandler;
     Camera1Presenter(CameraView c) {
         cameraView = c;
     }
+
     @Override
-    public boolean start() {
-        Log.i("pinaki-Camera1Preseter", "start thread");
+    public void onCreate() {
+        Log.i("pinaki-Camera1Presenter", "start thread");
         initThread();
         backgroundThread.start();
+        backgroundThread.prepareHandler();
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i("pinaki-Camera1Presenter", "stop thread");
+        backgroundThread.quit();
+        backgroundThread.interrupt();
+        backgroundThread = null;
+    }
+
+    @Override
+    public boolean start() {
+
 //        backgroundHandler = new Handler(backgroundThread.getLooper());
         Message m = Message.obtain();
         m.what = Camera1.CAMERA1_ACTION_OPEN;
         // TODO: do you need to pass a real Context object
-        m.obj = new Camera1(null);
+        camera1 = new Camera1(null);
+        m.obj = camera1;
         backgroundThread.queueMessage(m);
         return true;
     }
@@ -60,10 +77,9 @@ class Camera1Presenter implements CameraPresenter {
 
     @Override
     public void stop() {
-        Log.i("pinaki-Camera1Presenter", "stop thread");
-        backgroundThread.quit();
-        backgroundThread.interrupt();
-        backgroundThread = null;
+        if (camera1 != null) {
+            camera1.stop();
+        }
     }
 
     @Override

@@ -2,7 +2,6 @@ package xyz.pinaki.android.camera;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,7 +15,7 @@ import xyz.pinaki.androidcamera.R;
  * Created by pinaki on 8/11/17.
  */
 
-public class Camera1Fragment extends Fragment implements CameraView {
+public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     private static final String TAG = Camera1Fragment.class.getName();
     private CameraPresenter cameraPresenter;
     @Override
@@ -59,6 +58,18 @@ public class Camera1Fragment extends Fragment implements CameraView {
                 previewContainer.setVisibility(View.INVISIBLE);
             }
         });
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        cameraPresenter.onCreate();
+    }
+
+    @Override
+    public void onDestroy() {
+        cameraPresenter.onDestroy();
+        super.onDestroy();
     }
 
     @Override

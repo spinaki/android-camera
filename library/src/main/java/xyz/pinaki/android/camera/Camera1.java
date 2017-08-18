@@ -18,7 +18,6 @@ class Camera1 extends BaseCamera {
     static final int CAMERA1_ACTION_OPEN = 1;
     static final int CAMERA1_ACTION_TAKE_PICTURE = 2;
     private Camera camera;
-    private int cameraId = 0;
     WeakReference<Context> context; // TODO: set this
     Camera1(Context c) {
 //        context = new WeakReference<>(c);
@@ -39,10 +38,10 @@ class Camera1 extends BaseCamera {
                 stopAndRelease();
             }
             // TODO
-            Log.i(TAG, "start camera with ID: " + cameraId);
-            camera = Camera.open(cameraId);
+            Log.i(TAG, "start camera with ID: " + Camera.CameraInfo.CAMERA_FACING_BACK);
+            camera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
         } catch (RuntimeException exception) {
-            Log.i(TAG, "Cannot open camera with id " + cameraId, exception);
+            Log.i(TAG, "Cannot open camera with id " + Camera.CameraInfo.CAMERA_FACING_BACK, exception);
         }
         return false;
     }
@@ -99,6 +98,7 @@ class Camera1 extends BaseCamera {
 //        }
     }
 
+    // TODO: fix this
     private static boolean isCameraPresent(Context context) {
         if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
             // this device has a camera

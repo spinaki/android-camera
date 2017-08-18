@@ -10,7 +10,6 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
 /**
  * Created by pinaki on 3/6/17.
@@ -49,20 +48,27 @@ public class CameraController {
                 activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             }
         }
+        Camera1Fragment cameraView = new Camera1Fragment();
+        CameraPresenter presenter = new Camera1Presenter(cameraView);
+        cameraView.setPresenter(presenter);
+        activity.getSupportFragmentManager().beginTransaction().replace(
+                containerID, cameraView, "Camera1FragmentNew").commit();
 
-        if (isCamera2Supported(activity) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            Log.i(TAG, "Camera2 Supported");
-            camera2FragmentOld = Camera2FragmentOld.newInstance();
-            camera2FragmentOld.setCallback(callback);
-            activity.getSupportFragmentManager().beginTransaction().replace(
-                    containerID, camera2FragmentOld, "Camera2FragmentOld").commit();
-        } else {
-            Log.i(TAG, "Camera2 NOT Supported");
-            cameraFragmentOld = CameraFragmentOld.newInstance();
-            cameraFragmentOld.setCallback(callback);
-            activity.getSupportFragmentManager().beginTransaction().replace(
-                    containerID, cameraFragmentOld, "Camera1Fragment").commit();
-        }
+//        presenter.start();
+
+//        if (isCamera2Supported(activity) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//            Log.i(TAG, "Camera2 Supported");
+//            camera2FragmentOld = Camera2FragmentOld.newInstance();
+//            camera2FragmentOld.setCallback(callback);
+//            activity.getSupportFragmentManager().beginTransaction().replace(
+//                    containerID, camera2FragmentOld, "Camera2FragmentOld").commit();
+//        } else {
+//            Log.i(TAG, "Camera2 NOT Supported");
+//            cameraFragmentOld = CameraFragmentOld.newInstance();
+//            cameraFragmentOld.setCallback(callback);
+//            activity.getSupportFragmentManager().beginTransaction().replace(
+//                    containerID, cameraFragmentOld, "Camera1Fragment").commit();
+//        }
     }
 
     public void stop() {
