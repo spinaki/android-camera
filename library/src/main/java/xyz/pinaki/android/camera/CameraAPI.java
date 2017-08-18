@@ -17,7 +17,7 @@ class CameraAPI {
         baseCamera.stop();
     }
     protected void capture() {
-        baseCamera.takePicture();
+        baseCamera.takePicture(null);
     }
 //    abstract void setLivePreview();
 //    abstract void setCapturePreview();

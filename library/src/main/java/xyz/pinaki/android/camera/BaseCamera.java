@@ -10,6 +10,10 @@ abstract class BaseCamera {
     public abstract boolean isCameraOpened();
     public abstract void setFacing(int facing);
     public abstract int getFacing();
-    public abstract void takePicture();
+    public abstract void takePicture(PhotoTakenCallback p);
     // add any call backs
+
+    interface PhotoTakenCallback {
+        void onPhotoTaken(byte[] data);
+    }
 }

@@ -65,8 +65,8 @@ public class Camera1Fragment extends Fragment implements CameraView {
     public void onResume() {
         super.onResume();
         // TODO: fix this
-//        cameraHandlerThread = new CameraHandlerThread();
-//        cameraHandlerThread.start();
+//        cameraHandlerThreadOld = new CameraHandlerThreadOld();
+//        cameraHandlerThreadOld.start();
 //        openCamera();
 //        orientationListener.enable();
         cameraPresenter.start();
@@ -80,8 +80,8 @@ public class Camera1Fragment extends Fragment implements CameraView {
         cameraPresenter.stop();
 //        stopAndRelease();
 //        orientationListener.disable();
-//        if (cameraHandlerThread != null) {
-//            cameraHandlerThread.quit();
+//        if (cameraHandlerThreadOld != null) {
+//            cameraHandlerThreadOld.quit();
 //        }
     }
 
