@@ -63,7 +63,8 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        cameraPresenter.onCreate();
+        // TODO: fix this with the correct ViewGroup
+        cameraPresenter.onCreate(getContext(), (ViewGroup) getView());
     }
 
     @Override

@@ -1,9 +1,11 @@
 package xyz.pinaki.android.camera;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Message;
 import android.util.Log;
+import android.view.ViewGroup;
 
 /**
  * Created by pinaki on 8/11/17.
@@ -20,19 +22,25 @@ import android.util.Log;
 class Camera1Presenter implements CameraPresenter {
     private CameraView cameraView;
     private Camera1 camera1;
-    // TODO: should this be implemented by the Presenter or something else ?
+    private ViewFinderPreview viewFinderPreview;
+    // TODO: should the threading be implemented by the BasePresenter or something else ?
     private CameraHandlerThread backgroundThread;
-//    Handler backgroundHandler;
     Camera1Presenter(CameraView c) {
         cameraView = c;
     }
 
     @Override
-    public void onCreate() {
+    public void onCreate(Context context, ViewGroup viewGroup) {
         Log.i("pinaki-Camera1Presenter", "start thread");
         initThread();
         backgroundThread.start();
         backgroundThread.prepareHandler();
+        viewFinderPreview = new SurfaceViewPreview(context, viewGroup, new ViewFinderPreview.Callback() {
+            @Override
+            public void onSurfaceChanged() {
+
+            }
+        });
     }
 
     @Override
@@ -45,7 +53,6 @@ class Camera1Presenter implements CameraPresenter {
 
     @Override
     public boolean onResume() {
-//        backgroundHandler = new Handler(backgroundThread.getLooper());
         Message m = Message.obtain();
         m.what = Camera1.CAMERA1_ACTION_OPEN;
         // TODO: do you need to pass a real Context object
@@ -54,6 +61,7 @@ class Camera1Presenter implements CameraPresenter {
         backgroundThread.queueMessage(m);
         return true;
     }
+
     private void initThread() {
         backgroundThread = new CameraHandlerThread("Camera1Handler", new InternalCallback(){
             @Override
@@ -63,8 +71,11 @@ class Camera1Presenter implements CameraPresenter {
             @Override
             public void onCameraOpen(Camera camera) {
                 // TODO should camera be used ?
-                // add the surface / textureview
-                // listen on the callback for the surfaceview / textureview creation
+
+                // create a View for the preview -- like a Surface or Texture
+                // When that is created -- setup the camera params
+                // Start the preview.
+
             }
 
             @Override

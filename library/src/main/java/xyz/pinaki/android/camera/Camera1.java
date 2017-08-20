@@ -46,6 +46,13 @@ class Camera1 extends BaseCamera {
         return false;
     }
 
+    void setParameters() {
+        Camera.Parameters parameters = camera.getParameters();
+        for (Camera.Size size : parameters.getSupportedPictureSizes()) {
+//            mPictureSizes.add(new Size(size.width, size.height));
+        }
+    }
+
     @Override
     public void stop() {
         stopAndRelease();
