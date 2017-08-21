@@ -5,7 +5,9 @@ import android.content.pm.PackageManager;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Looper;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import java.io.IOException;
@@ -22,9 +24,9 @@ class Camera1 extends BaseCamera {
     static final int CAMERA1_ACTION_TAKE_PICTURE = 2;
     private Camera camera;
     private ViewFinderPreview viewFinderPreview;
-    WeakReference<Context> context; // TODO: set this
-    Camera1(Context c) {
-//        context = new WeakReference<>(c);
+    WeakReference<AppCompatActivity> activity; // TODO: set this ?
+    Camera1(AppCompatActivity a) {
+        activity = new WeakReference<>(a);
     }
 
     @Override
@@ -63,7 +65,28 @@ class Camera1 extends BaseCamera {
         adjustCameraParameters(parameters);
         // fix orientation
 //        camera.setDisplayOrientation(calcCameraRotation(mDisplayOrientation));
+        setOrientation();
+    }
 
+    private void setOrientation() {
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, cameraInfo);
+        int rotation = activity.get().getWindowManager().getDefaultDisplay().getRotation();
+        int degrees = 0;
+        switch (rotation) {
+            case Surface.ROTATION_0: degrees = 0; break;
+            case Surface.ROTATION_90: degrees = 90; break;
+            case Surface.ROTATION_180: degrees = 180; break;
+            case Surface.ROTATION_270: degrees = 270; break;
+        }
+        int result;
+        if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            result = (cameraInfo.orientation + degrees) % 360;
+            result = (360 - result) % 360;  // compensate the mirror
+        } else {  // back-facing
+            result = (cameraInfo.orientation - degrees + 360) % 360;
+        }
+        camera.setDisplayOrientation(result);
     }
 
     private void adjustCameraParameters(Camera.Parameters parameters) {

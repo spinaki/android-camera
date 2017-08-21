@@ -3,7 +3,10 @@ package xyz.pinaki.android.camera;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+
+import java.lang.ref.WeakReference;
 
 /**
  * Created by pinaki on 8/11/17.
@@ -18,13 +21,14 @@ import android.util.Log;
  */
 
 class Camera1Presenter implements CameraPresenter {
-    private CameraView cameraView;
+//    private CameraView cameraView;
     private Camera1 camera1;
+    private WeakReference<AppCompatActivity> activity;
     private ViewFinderPreview viewFinderPreview;
     // TODO: should the threading be implemented by the BasePresenter or something else ?
     private CameraHandlerThread backgroundThread;
-    Camera1Presenter(CameraView c) {
-        cameraView = c;
+    Camera1Presenter(AppCompatActivity a) {
+        activity = new WeakReference<>(a);
     }
 
     @Override
@@ -49,7 +53,7 @@ class Camera1Presenter implements CameraPresenter {
         Message m = Message.obtain();
         m.what = Camera1.CAMERA1_ACTION_OPEN;
         // TODO: do you need to pass a real Context object
-        camera1 = new Camera1(null);
+        camera1 = new Camera1(activity.get());
         camera1.setPreview(viewFinderPreview);
         m.obj = camera1;
         backgroundThread.queueMessage(m);
