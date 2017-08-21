@@ -1,11 +1,9 @@
 package xyz.pinaki.android.camera;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Message;
 import android.util.Log;
-import android.view.ViewGroup;
 
 /**
  * Created by pinaki on 8/11/17.
@@ -30,17 +28,11 @@ class Camera1Presenter implements CameraPresenter {
     }
 
     @Override
-    public void onCreate(Context context, ViewGroup viewGroup) {
+    public void onCreate() {
         Log.i("pinaki-Camera1Presenter", "start thread");
         initThread();
         backgroundThread.start();
         backgroundThread.prepareHandler();
-        viewFinderPreview = new SurfaceViewPreview(context, viewGroup, new ViewFinderPreview.Callback() {
-            @Override
-            public void onSurfaceChanged() {
-
-            }
-        });
     }
 
     @Override
@@ -51,12 +43,14 @@ class Camera1Presenter implements CameraPresenter {
         backgroundThread = null;
     }
 
+    // primarily used to open camera
     @Override
     public boolean onResume() {
         Message m = Message.obtain();
         m.what = Camera1.CAMERA1_ACTION_OPEN;
         // TODO: do you need to pass a real Context object
         camera1 = new Camera1(null);
+        camera1.setPreview(viewFinderPreview);
         m.obj = camera1;
         backgroundThread.queueMessage(m);
         return true;
@@ -85,11 +79,18 @@ class Camera1Presenter implements CameraPresenter {
         });
     }
 
+    // primarily used to stop camera
     @Override
     public void onPause() {
         if (camera1 != null) {
             camera1.stop();
+            camera1 = null;
         }
+    }
+
+    @Override
+    public void setPreview(ViewFinderPreview v) {
+        viewFinderPreview = v;
     }
 
     @Override

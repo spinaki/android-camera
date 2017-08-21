@@ -1,5 +1,6 @@
 package xyz.pinaki.android.camera;
 
+import android.graphics.SurfaceTexture;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
@@ -23,5 +24,10 @@ final class TextureViewPreview extends ViewFinderPreview {
     @Override
     View getView() {
         return null;
+    }
+
+    @Override
+    Class gePreviewType() {
+        return SurfaceTexture.class;
     }
 }

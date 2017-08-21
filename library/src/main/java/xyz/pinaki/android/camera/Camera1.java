@@ -2,10 +2,13 @@ package xyz.pinaki.android.camera;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Looper;
 import android.util.Log;
+import android.view.SurfaceHolder;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 /**
@@ -18,6 +21,7 @@ class Camera1 extends BaseCamera {
     static final int CAMERA1_ACTION_OPEN = 1;
     static final int CAMERA1_ACTION_TAKE_PICTURE = 2;
     private Camera camera;
+    private ViewFinderPreview viewFinderPreview;
     WeakReference<Context> context; // TODO: set this
     Camera1(Context c) {
 //        context = new WeakReference<>(c);
@@ -31,6 +35,7 @@ class Camera1 extends BaseCamera {
         if (Looper.getMainLooper().isCurrentThread()) {
             throw new RuntimeException("Camera Cannot Start in Main UI Thread");
         }
+        // TODO: choose the camera based on ID
         // start the camera
         try {
             if (camera != null) {
@@ -46,11 +51,57 @@ class Camera1 extends BaseCamera {
         return false;
     }
 
-    void setParameters() {
+    void configureParameters() {
         Camera.Parameters parameters = camera.getParameters();
+        // get supporting preview sizes
+        for (Camera.Size size : parameters.getSupportedPreviewSizes()) {
+//            mPictureSizes.add(new Size(size.width, size.height));
+        }
         for (Camera.Size size : parameters.getSupportedPictureSizes()) {
 //            mPictureSizes.add(new Size(size.width, size.height));
         }
+        adjustCameraParameters(parameters);
+        // fix orientation
+//        camera.setDisplayOrientation(calcCameraRotation(mDisplayOrientation));
+
+    }
+
+    private void adjustCameraParameters(Camera.Parameters parameters) {
+        Camera.Size s = parameters.getSupportedPreviewSizes().get(0);
+        Log.i(TAG, "getSupportedPreviewSizes: " + s.width + ", " + s.height);
+        parameters.setPreviewSize(s.width, s.height);
+        Camera.Size s1 = parameters.getSupportedPictureSizes().get(0);
+        Log.i(TAG, "getSupportedPictureSizes: " + + s1.width + ", " + s1.height);
+        parameters.setPictureSize(s.width, s.height);
+//        parameters.setRotation(calcCameraRotation(mDisplayOrientation));
+//        setAutoFocusInternal(mAutoFocus);
+//        setFlashInternal(mFlash);
+        camera.setParameters(parameters);
+        // TODO: is the following required ? -- not sure
+//        viewFinderPreview.getSurfaceHolder().setFixedSize(s.height, s.width);
+    }
+
+    void setPreview(ViewFinderPreview v) {
+        viewFinderPreview = v;
+    }
+    void setUpPreview() {
+        try {
+            if (viewFinderPreview.gePreviewType() == SurfaceHolder.class) {
+                Log.i(TAG, "setPreviewDisplay");
+                camera.setPreviewDisplay(viewFinderPreview.getSurfaceHolder());
+            } else if (viewFinderPreview.gePreviewType() == SurfaceTexture.class) {
+                camera.setPreviewTexture(viewFinderPreview.getSurfaceTexture());
+            } else {
+                throw new RuntimeException("Unknown Preview Surface Type");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    void startPreview() {
+        Log.i(TAG, "startPreview");
+        camera.startPreview();
     }
 
     @Override

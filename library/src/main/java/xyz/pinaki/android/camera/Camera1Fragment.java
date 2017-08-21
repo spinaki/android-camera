@@ -18,10 +18,13 @@ import xyz.pinaki.androidcamera.R;
 public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     private static final String TAG = Camera1Fragment.class.getName();
     private CameraPresenter cameraPresenter;
+    private ViewFinderPreview viewFinderPreview;
+    private int numCallsToChange = 0;
+    RelativeLayout parentLayout;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(TAG, "onCreateView");
-        RelativeLayout parentLayout = (RelativeLayout) inflater.inflate(R.layout.camera_fragment, container, false);
+        parentLayout = (RelativeLayout) inflater.inflate(R.layout.camera_fragment, container, false);
         return  parentLayout;
     }
 
@@ -49,7 +52,7 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
 
         // captured preview
         // TODO: fix this
-        final View previewContainer = view.findViewById(R.id.preview_container);
+        final ViewGroup previewContainer = (ViewGroup) view.findViewById(R.id.preview_container);
         final ImageView previewImage = (ImageView) view.findViewById(R.id.preview_image);
         final ImageView previewCloseButton = (ImageView) view.findViewById(R.id.preview_close_icon);
         previewCloseButton.setOnClickListener(new View.OnClickListener() {
@@ -58,13 +61,37 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
                 previewContainer.setVisibility(View.INVISIBLE);
             }
         });
+        viewFinderPreview = new SurfaceViewPreview(getContext(), parentLayout, new ViewFinderPreview.Callback() {
+            @Override
+            public void onSurfaceChanged() {
+                numCallsToChange++;
+                Log.i(TAG, "viewFinderPreview onSurfaceChanged, numCalls: " + numCallsToChange);
+                cameraPresenter.setPreview(viewFinderPreview);
+                cameraPresenter.onResume();
+            }
+
+            @Override
+            public void onSurfaceDestroyed() {
+                numCallsToChange--;
+                Log.i(TAG, "viewFinderPreview onSurfaceDestroyed");
+                cameraPresenter.onPause();
+            }
+
+            @Override
+            public void onSurfaceCreated() {
+                Log.i(TAG, "viewFinderPreview onSurfaceCreated");
+            }
+        });
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // TODO: fix this with the correct ViewGroup
-        cameraPresenter.onCreate(getContext(), (ViewGroup) getView());
+//        cameraPresenter.onCreate(getContext(), (ViewGroup) getView());
+        // TODO or not use viewgroup here and use in fragment
+        cameraPresenter.onCreate();
+
     }
 
     @Override
@@ -75,21 +102,23 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
 
     @Override
     public void onResume() {
+        Log.i(TAG, "onResume");
         super.onResume();
         // TODO: fix this
 //        cameraHandlerThreadOld = new CameraHandlerThreadOld();
 //        cameraHandlerThreadOld.onResume();
 //        openCamera();
 //        orientationListener.enable();
-        cameraPresenter.onResume();
+//        cameraPresenter.onResume();
     }
 
     @Override
     public void onPause() {
         Log.i(TAG, "onPause");
         super.onPause();
-        // TODO: fic this
-        cameraPresenter.onPause();
+        // TODO: fix this
+//        cameraPresenter.onPause();
+
 //        stopAndRelease();
 //        orientationListener.disable();
 //        if (cameraHandlerThreadOld != null) {

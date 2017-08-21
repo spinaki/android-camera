@@ -2,6 +2,7 @@ package xyz.pinaki.android.camera;
 
 import android.content.Context;
 import android.support.v4.view.ViewCompat;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -15,6 +16,7 @@ import xyz.pinaki.androidcamera.R;
  */
 
 final class SurfaceViewPreview extends ViewFinderPreview {
+    private static final String TAG = SurfaceViewPreview.class.getName();
     SurfaceView surfaceView;
     SurfaceViewPreview(Context context, ViewGroup parent, Callback callback) {
         super(callback);
@@ -26,10 +28,13 @@ final class SurfaceViewPreview extends ViewFinderPreview {
         holder.addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder h) {
+                Log.i(TAG, "SurfaceViewPreview created");
+                dispatchSurfaceCreated();
             }
 
             @Override
             public void surfaceChanged(SurfaceHolder h, int format, int width, int height) {
+                Log.i(TAG, "SurfaceViewPreview changed");
                 // TODO: dow we need a setSize ?
 //                setSize(width, height);
                 if (!ViewCompat.isInLayout(surfaceView)) {
@@ -39,6 +44,8 @@ final class SurfaceViewPreview extends ViewFinderPreview {
 
             @Override
             public void surfaceDestroyed(SurfaceHolder h) {
+                Log.i(TAG, "SurfaceViewPreview destroyed");
+                dispatchSurfaceDestroyed();
 //                setSize(0, 0);
             }
         });
@@ -46,11 +53,21 @@ final class SurfaceViewPreview extends ViewFinderPreview {
 
     @Override
     Surface getSurface() {
-        return null;
+        return surfaceView.getHolder().getSurface();
+    }
+
+    @Override
+    SurfaceHolder getSurfaceHolder() {
+        return surfaceView.getHolder();
     }
 
     @Override
     View getView() {
         return null;
+    }
+
+    @Override
+    Class gePreviewType() {
+        return SurfaceHolder.class;
     }
 }

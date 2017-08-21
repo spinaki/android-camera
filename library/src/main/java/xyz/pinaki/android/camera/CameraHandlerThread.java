@@ -50,29 +50,33 @@ final class CameraHandlerThread extends HandlerThread {
         }
         @Override
         public void handleMessage(Message msg) {
-            BaseCamera camera1;
+//            Camera1 camera1;
             super.handleMessage(msg);
             switch (msg.what) {
                 case Camera1.CAMERA1_ACTION_OPEN:
-                    camera1 = (Camera1) msg.obj;
+                    final Camera1 camera1 = (Camera1) msg.obj;
                     Log.i(TAG,"in thread to open cam");
                     camera1.start(); // TODO: fix this -- is camera return required ?
+                    camera1.setUpPreview();
+//                    camera1.startPreview();
                     uiHandler.post(new Runnable() {
                         @Override
                         public void run() {
+                            camera1.configureParameters();
+                            camera1.startPreview();
 //                            uiCallback.get().onCameraOpen(null); // TODO: Should you have onCameraOpen
                         }
                     });
                     break;
                 case Camera1.CAMERA1_ACTION_TAKE_PICTURE:
-                    camera1 = (Camera1) msg.obj;
-                    camera1.takePicture(new BaseCamera.PhotoTakenCallback() {
-                        @Override
-                        public void onPhotoTaken(byte[] data) {
-                            // run something on uithread -- possibly using uiHandler
-                            // this should trigger something in the presenter
-                        }
-                    }); // should have a callback on onPictureTaken
+//                    camera1 = (Camera1) msg.obj;
+//                    camera1.takePicture(new BaseCamera.PhotoTakenCallback() {
+//                        @Override
+//                        public void onPhotoTaken(byte[] data) {
+//                            // run something on uithread -- possibly using uiHandler
+//                            // this should trigger something in the presenter
+//                        }
+//                    }); // should have a callback on onPictureTaken
                     break;
                 default:
                     throw new RuntimeException("Unknown Action In CameraHandlerThred with what: " + msg.what);

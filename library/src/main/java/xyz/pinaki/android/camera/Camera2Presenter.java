@@ -1,8 +1,5 @@
 package xyz.pinaki.android.camera;
 
-import android.content.Context;
-import android.view.ViewGroup;
-
 /**
  * Created by pinaki on 8/11/17.
  */
@@ -14,7 +11,7 @@ class Camera2Presenter implements CameraPresenter {
     }
 
     @Override
-    public void onCreate(Context context, ViewGroup viewGroup) {
+    public void onCreate() {
 
     }
 
@@ -30,6 +27,11 @@ class Camera2Presenter implements CameraPresenter {
 
     @Override
     public void onPause() {
+
+    }
+
+    @Override
+    public void setPreview(ViewFinderPreview v) {
 
     }
 
