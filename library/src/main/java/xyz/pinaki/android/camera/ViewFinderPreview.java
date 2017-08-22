@@ -41,6 +41,8 @@ abstract class ViewFinderPreview {
         return null;
     }
     abstract View getView();
+    abstract void start();
+    abstract void stop();
 
     abstract Class gePreviewType();
 

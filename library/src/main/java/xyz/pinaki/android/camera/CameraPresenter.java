@@ -11,7 +11,7 @@ interface CameraPresenter {
     void onPause();
     void setPreview(ViewFinderPreview v);
     boolean isCameraOpened();
-    void setFacing(int facing);
+    void setFacing(CameraAPI.LensFacing l);
     int getFacing();
     void takePicture();
 }

@@ -26,10 +26,9 @@ class Camera2 extends BaseCamera {
     }
 
     @Override
-    public void setFacing(int facing) {
+    public void setFacing(CameraAPI.LensFacing lensFacing) {
 
     }
-
     @Override
     public int getFacing() {
         return 0;

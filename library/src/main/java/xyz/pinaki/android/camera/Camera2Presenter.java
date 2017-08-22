@@ -41,7 +41,7 @@ class Camera2Presenter implements CameraPresenter {
     }
 
     @Override
-    public void setFacing(int facing) {
+    public void setFacing(CameraAPI.LensFacing l) {
 
     }
 

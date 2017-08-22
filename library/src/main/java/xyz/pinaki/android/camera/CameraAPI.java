@@ -4,9 +4,22 @@ package xyz.pinaki.android.camera;
  * Created by pinaki on 8/11/17.
  */
 
-class CameraAPI {
-    private final BaseCamera baseCamera;
+public class CameraAPI {
+    public static final class LensFacing {
+        private final String name;
+        private LensFacing(String s) {
+            name = s;
+        }
+        public static final LensFacing BACK = new LensFacing("back");
+        public static final LensFacing FRONT = new LensFacing("front");
+    }
 
+    public static final class FlashStatus {
+        public static final int OFF = 0;
+        public static final int ON = 0;
+    }
+
+    private final BaseCamera baseCamera;
     CameraAPI(BaseCamera b) {
         baseCamera = b;
     }

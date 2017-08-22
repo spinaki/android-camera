@@ -27,6 +27,16 @@ final class TextureViewPreview extends ViewFinderPreview {
     }
 
     @Override
+    void start() {
+
+    }
+
+    @Override
+    void stop() {
+
+    }
+
+    @Override
     Class gePreviewType() {
         return SurfaceTexture.class;
     }

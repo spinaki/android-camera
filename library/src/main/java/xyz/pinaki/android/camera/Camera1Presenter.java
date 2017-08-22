@@ -23,6 +23,7 @@ import java.lang.ref.WeakReference;
 class Camera1Presenter implements CameraPresenter {
 //    private CameraView cameraView;
     private Camera1 camera1;
+    private CameraAPI.LensFacing lensFacing = CameraAPI.LensFacing.BACK;
     private WeakReference<AppCompatActivity> activity;
     private ViewFinderPreview viewFinderPreview;
     // TODO: should the threading be implemented by the BasePresenter or something else ?
@@ -54,6 +55,7 @@ class Camera1Presenter implements CameraPresenter {
         m.what = Camera1.CAMERA1_ACTION_OPEN;
         // TODO: do you need to pass a real Context object
         camera1 = new Camera1(activity.get());
+        camera1.setFacing(lensFacing);
         camera1.setPreview(viewFinderPreview);
         m.obj = camera1;
         backgroundThread.queueMessage(m);
@@ -103,8 +105,8 @@ class Camera1Presenter implements CameraPresenter {
     }
 
     @Override
-    public void setFacing(int facing) {
-
+    public void setFacing(CameraAPI.LensFacing l) {
+        lensFacing = l;
     }
 
     @Override

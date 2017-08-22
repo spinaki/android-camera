@@ -33,6 +33,7 @@ class Camera1 extends BaseCamera {
     static final int CAMERA1_ACTION_OPEN = 1;
     static final int CAMERA1_ACTION_TAKE_PICTURE = 2;
     private Camera camera;
+    private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
     private ViewFinderPreview viewFinderPreview;
     WeakReference<AppCompatActivity> activity; // TODO: set this ?
     Camera1(AppCompatActivity a) {
@@ -54,11 +55,11 @@ class Camera1 extends BaseCamera {
                 // TODO: fix
                 stopAndRelease();
             }
-            Log.i(TAG, "start camera with ID: " + Camera.CameraInfo.CAMERA_FACING_BACK);
-            camera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
+            Log.i(TAG, "start camera with ID: " + cameraId);
+            camera = Camera.open(cameraId);
             return true;
         } catch (RuntimeException exception) {
-            Log.i(TAG, "Cannot open camera with id " + Camera.CameraInfo.CAMERA_FACING_BACK, exception);
+            Log.i(TAG, "Cannot open camera with id " + cameraId, exception);
         }
         return false;
     }
@@ -72,7 +73,7 @@ class Camera1 extends BaseCamera {
 
     private void setOrientation() {
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-        Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, cameraInfo);
+        Camera.getCameraInfo(cameraId, cameraInfo);
         int rotation = activity.get().getWindowManager().getDefaultDisplay().getRotation();
         int degrees = 0;
         switch (rotation) {
@@ -96,14 +97,15 @@ class Camera1 extends BaseCamera {
         Log.i(TAG, "OptimalPreviewSize: " + s.getWidth() + ", " + s.getHeight() + ", AspectRatio: " +
                 aspectRatio);
         parameters.setPreviewSize(s.getWidth(), s.getHeight());
+        // TODO: is the following required ? -- not sure
+//        viewFinderPreview.getSurfaceHolder().setFixedSize(s.getHeight(), s.getWidth());
         s = chooseOptimalSize(parameters.getSupportedPictureSizes());
         parameters.setPictureSize(s.getWidth(), s.getHeight());
-//        parameters.setRotation(calcCameraRotation(mDisplayOrientation));
         setAutoFocusInternal(parameters); // how to set focus at the correct point ?
-//        setFlashInternal(mFlash); // TODO: add this
+        // TODO: add setRotation for correct final image rotation
+        //        parameters.setRotation(calcCameraRotation(mDisplayOrientation));
+//        setFlashInternal(mFlash);
         camera.setParameters(parameters);
-        // TODO: is the following required ? -- not sure
-//        viewFinderPreview.getSurfaceHolder().setFixedSize(s.height, s.width);
     }
 
     private void setAutoFocusInternal(Camera.Parameters parameters) {
@@ -141,7 +143,7 @@ class Camera1 extends BaseCamera {
 
         // if sizes not found: find the aspect ratio of the input sizes
         // choose the largest aspect ratio from the list.
-//        aspectRatio = AspectRatio.of(160, 120);
+//        aspectRatio = AspectRatio.of(16, 9); HACK
         SortedSet<Size> sizes = aspectRatioSortedSizesMap.get(aspectRatio);
         if (sizes == null) {
             aspectRatio = chooseAspectRatio(aspectRatioSortedSizesMap.keySet());
@@ -212,8 +214,14 @@ class Camera1 extends BaseCamera {
     }
 
     @Override
-    public void setFacing(int facing) {
-
+    public void setFacing(CameraAPI.LensFacing lensFacing) {
+        if (lensFacing == CameraAPI.LensFacing.BACK) {
+            cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
+        } else if (lensFacing == CameraAPI.LensFacing.FRONT) {
+            cameraId = Camera.CameraInfo.CAMERA_FACING_FRONT;
+        } else {
+            throw new RuntimeException("Unknown Facing Camera!");
+        }
     }
 
     @Override

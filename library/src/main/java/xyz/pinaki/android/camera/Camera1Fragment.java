@@ -20,7 +20,9 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     private CameraPresenter cameraPresenter;
     private ViewFinderPreview viewFinderPreview;
     private int numCallsToChange = 0;
-    RelativeLayout parentLayout;
+    private CameraAPI.LensFacing currentFacing = CameraAPI.LensFacing.BACK;
+    private RelativeLayout parentLayout;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(TAG, "onCreateView");
@@ -68,6 +70,8 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
                 Log.i(TAG, "viewFinderPreview onSurfaceChanged, numCalls: " + numCallsToChange);
                 cameraPresenter.setPreview(viewFinderPreview);
                 cameraPresenter.onResume();
+                // TODO is this reqd ??
+//                parentLayout.requestLayout();
             }
 
             @Override
@@ -82,6 +86,7 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
                 Log.i(TAG, "viewFinderPreview onSurfaceCreated");
             }
         });
+        viewFinderPreview.start();
     }
 
     @Override
@@ -153,8 +158,11 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
 
     @Override
     public void switchCameraClicked() {
-        // TODO: fix
-        cameraPresenter.setFacing(0);
+        currentFacing = currentFacing == CameraAPI.LensFacing.BACK ? CameraAPI.LensFacing.FRONT : CameraAPI
+                .LensFacing.BACK;
+        viewFinderPreview.stop();
+        cameraPresenter.setFacing(currentFacing);
+        viewFinderPreview.start();
     }
 
     @Override

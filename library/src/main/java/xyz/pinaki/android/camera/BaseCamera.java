@@ -11,7 +11,7 @@ abstract class BaseCamera {
     public abstract boolean start();
     public abstract void stop();
     public abstract boolean isCameraOpened();
-    public abstract void setFacing(int facing);
+    public abstract void setFacing(CameraAPI.LensFacing lensFacing);
     public abstract int getFacing();
     public abstract void takePicture(PhotoTakenCallback p);
     protected AspectRatio aspectRatio = DEFAULT_ASPECT_RATIO;

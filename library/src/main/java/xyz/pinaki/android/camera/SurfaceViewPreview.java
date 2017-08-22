@@ -16,10 +16,47 @@ import android.view.ViewGroup;
 final class SurfaceViewPreview extends ViewFinderPreview {
     private static final String TAG = SurfaceViewPreview.class.getName();
     SurfaceView surfaceView;
-    SurfaceViewPreview(Context context, ViewGroup parent, Callback callback) {
+    ViewGroup parentView;
+    Context context;
+    SurfaceViewPreview(Context c, ViewGroup parent, Callback callback) {
         super(callback);
+        parentView = parent;
+        context = c;
+    }
+
+    @Override
+    Surface getSurface() {
+        return surfaceView.getHolder().getSurface();
+    }
+
+    @Override
+    SurfaceHolder getSurfaceHolder() {
+        return surfaceView.getHolder();
+    }
+
+    @Override
+    View getView() {
+        return surfaceView;
+    }
+
+    @Override
+    Class gePreviewType() {
+        return SurfaceHolder.class;
+    }
+
+    @Override
+    void stop() {
+        parentView.removeView(surfaceView);
+        surfaceView = null;
+    }
+
+    @Override
+    void start() {
         surfaceView = new SurfaceView(context);
-        parent.addView(surfaceView, 0);
+//        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams
+//                .WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+//        surfaceView.setLayoutParams(layoutParams);
+        parentView.addView(surfaceView, 0);
         final SurfaceHolder holder = surfaceView.getHolder();
         //noinspection deprecation
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
@@ -47,25 +84,5 @@ final class SurfaceViewPreview extends ViewFinderPreview {
 //                setSize(0, 0);
             }
         });
-    }
-
-    @Override
-    Surface getSurface() {
-        return surfaceView.getHolder().getSurface();
-    }
-
-    @Override
-    SurfaceHolder getSurfaceHolder() {
-        return surfaceView.getHolder();
-    }
-
-    @Override
-    View getView() {
-        return null;
-    }
-
-    @Override
-    Class gePreviewType() {
-        return SurfaceHolder.class;
     }
 }
