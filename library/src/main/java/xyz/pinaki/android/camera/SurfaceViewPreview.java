@@ -35,8 +35,8 @@ final class SurfaceViewPreview extends ViewFinderPreview {
             @Override
             public void surfaceChanged(SurfaceHolder h, int format, int width, int height) {
                 Log.i(TAG, "SurfaceViewPreview changed");
-                // TODO: dow we need a setSize ?
-//                setSize(width, height);
+                // TODO: dow we need a setSize ? possibly
+                setSize(width, height);
                 if (!ViewCompat.isInLayout(surfaceView)) {
                     dispatchSurfaceChanged();
                 }

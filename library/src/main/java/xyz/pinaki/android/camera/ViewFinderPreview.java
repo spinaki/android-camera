@@ -11,6 +11,19 @@ import android.view.View;
 
 abstract class ViewFinderPreview {
     private Callback mCallback;
+    private int width;
+    private int height;
+    protected void setSize(int w, int h) {
+        width = w;
+        height = h;
+    }
+    int getWidth() {
+        return width;
+    }
+    int getHeight() {
+        return height;
+    }
+
     interface Callback {
         void onSurfaceChanged();
         void onSurfaceDestroyed();

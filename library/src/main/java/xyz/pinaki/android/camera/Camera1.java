@@ -2,6 +2,7 @@ package xyz.pinaki.android.camera;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Looper;
@@ -12,6 +13,15 @@ import android.view.SurfaceHolder;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+
+import xyz.pinaki.android.camera.dimension.AspectRatio;
+import xyz.pinaki.android.camera.dimension.Size;
 
 /**
  * Created by pinaki on 8/11/17.
@@ -31,9 +41,9 @@ class Camera1 extends BaseCamera {
 
     @Override
     public boolean start() { // TODO: should this take the cameraID ?
-//        if (!isCameraPresent(context.get())) {
-//            return false;
-//        }
+        if (!isCameraPresent(activity.get())) {
+            return false;
+        }
         if (Looper.getMainLooper().isCurrentThread()) {
             throw new RuntimeException("Camera Cannot Start in Main UI Thread");
         }
@@ -44,9 +54,9 @@ class Camera1 extends BaseCamera {
                 // TODO: fix
                 stopAndRelease();
             }
-            // TODO
             Log.i(TAG, "start camera with ID: " + Camera.CameraInfo.CAMERA_FACING_BACK);
             camera = Camera.open(Camera.CameraInfo.CAMERA_FACING_BACK);
+            return true;
         } catch (RuntimeException exception) {
             Log.i(TAG, "Cannot open camera with id " + Camera.CameraInfo.CAMERA_FACING_BACK, exception);
         }
@@ -54,15 +64,7 @@ class Camera1 extends BaseCamera {
     }
 
     void configureParameters() {
-        Camera.Parameters parameters = camera.getParameters();
-        // get supporting preview sizes
-        for (Camera.Size size : parameters.getSupportedPreviewSizes()) {
-//            mPictureSizes.add(new Size(size.width, size.height));
-        }
-        for (Camera.Size size : parameters.getSupportedPictureSizes()) {
-//            mPictureSizes.add(new Size(size.width, size.height));
-        }
-        adjustCameraParameters(parameters);
+        adjustCameraParameters(camera.getParameters());
         // fix orientation
 //        camera.setDisplayOrientation(calcCameraRotation(mDisplayOrientation));
         setOrientation();
@@ -90,18 +92,90 @@ class Camera1 extends BaseCamera {
     }
 
     private void adjustCameraParameters(Camera.Parameters parameters) {
-        Camera.Size s = parameters.getSupportedPreviewSizes().get(0);
-        Log.i(TAG, "getSupportedPreviewSizes: " + s.width + ", " + s.height);
-        parameters.setPreviewSize(s.width, s.height);
-        Camera.Size s1 = parameters.getSupportedPictureSizes().get(0);
-        Log.i(TAG, "getSupportedPictureSizes: " + + s1.width + ", " + s1.height);
-        parameters.setPictureSize(s.width, s.height);
+        Size s = chooseOptimalSize(parameters.getSupportedPreviewSizes());
+        Log.i(TAG, "OptimalPreviewSize: " + s.getWidth() + ", " + s.getHeight() + ", AspectRatio: " +
+                aspectRatio);
+        parameters.setPreviewSize(s.getWidth(), s.getHeight());
+        s = chooseOptimalSize(parameters.getSupportedPictureSizes());
+        parameters.setPictureSize(s.getWidth(), s.getHeight());
 //        parameters.setRotation(calcCameraRotation(mDisplayOrientation));
-//        setAutoFocusInternal(mAutoFocus);
-//        setFlashInternal(mFlash);
+        setAutoFocusInternal(parameters); // how to set focus at the correct point ?
+//        setFlashInternal(mFlash); // TODO: add this
         camera.setParameters(parameters);
         // TODO: is the following required ? -- not sure
 //        viewFinderPreview.getSurfaceHolder().setFixedSize(s.height, s.width);
+    }
+
+    private void setAutoFocusInternal(Camera.Parameters parameters) {
+        final List<String> modes = parameters.getSupportedFocusModes();
+        if (modes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        } else if (modes.contains(Camera.Parameters.FOCUS_MODE_FIXED)) {
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_FIXED);
+        } else if (modes.contains(Camera.Parameters.FOCUS_MODE_INFINITY)) {
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_INFINITY);
+        } else {
+            parameters.setFocusMode(modes.get(0));
+        }
+    }
+
+    @SuppressWarnings("SuspiciousNameCombination")
+    private Size chooseOptimalSize(List<Camera.Size> cameraSizes) {
+        Map<AspectRatio, SortedSet<Size>> aspectRatioSortedSizesMap = new HashMap<>();
+        // get supporting preview sizes
+        for (Camera.Size csize : cameraSizes) {
+            AspectRatio a = AspectRatio.of(csize.width, csize.height);
+            SortedSet<Size>sizes = aspectRatioSortedSizesMap.get(a);
+            if (sizes == null) {
+                sizes = new TreeSet<>();
+                aspectRatioSortedSizesMap.put(a, sizes);
+            }
+            sizes.add(new Size(csize.width, csize.height));
+        }
+        Log.i(TAG, "getSupportedPreviewSizes all: " + aspectRatioSortedSizesMap.values());
+        // aspect ratio should always be populated either with default or user input values.
+        // find the sizes that have the aspect ratio as above
+
+        // if sizes found: chooseOptimalSize to find the optimal size
+        // using the surface width and height compensated by the orientation
+
+        // if sizes not found: find the aspect ratio of the input sizes
+        // choose the largest aspect ratio from the list.
+//        aspectRatio = AspectRatio.of(160, 120);
+        SortedSet<Size> sizes = aspectRatioSortedSizesMap.get(aspectRatio);
+        if (sizes == null) {
+            aspectRatio = chooseAspectRatio(aspectRatioSortedSizesMap.keySet());
+            sizes = aspectRatioSortedSizesMap.get(aspectRatio);
+        }
+        final int surfaceWidth = viewFinderPreview.getWidth();
+        final int surfaceHeight = viewFinderPreview.getHeight();
+        int desiredWidth = surfaceWidth;
+        int desiredHeight = surfaceHeight;
+        // TODO: fix this with orientation listener
+        if (isPortrait()) {
+            desiredWidth = surfaceHeight;
+            desiredHeight = surfaceWidth;
+        }
+        Size result = null;
+        for (Size s: sizes) {
+            if (desiredWidth <= s.getWidth() && desiredHeight <= s.getHeight()) {
+                return s;
+            }
+            result = s;
+        }
+        return result;
+    }
+    // TODO: instead of this use the orientation listener
+    private boolean isPortrait() {
+        return (activity.get().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
+    }
+
+    AspectRatio chooseAspectRatio(Set<AspectRatio> aspectRatioSet) {
+        if (aspectRatioSet.contains(aspectRatio)) {
+            return aspectRatio;
+        }
+        SortedSet<AspectRatio> aspectRatios = new TreeSet<>(aspectRatioSet);
+        return aspectRatios.last();
     }
 
     void setPreview(ViewFinderPreview v) {
