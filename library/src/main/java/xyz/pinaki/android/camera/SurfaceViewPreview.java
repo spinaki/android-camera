@@ -9,8 +9,6 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 
-import xyz.pinaki.androidcamera.R;
-
 /**
  * Created by pinaki on 8/19/17.
  */
@@ -20,8 +18,8 @@ final class SurfaceViewPreview extends ViewFinderPreview {
     SurfaceView surfaceView;
     SurfaceViewPreview(Context context, ViewGroup parent, Callback callback) {
         super(callback);
-        final View view = View.inflate(context, R.layout.surface_view, parent);
-        surfaceView = (SurfaceView) view.findViewById(R.id.surface_view);
+        surfaceView = new SurfaceView(context);
+        parent.addView(surfaceView, 0);
         final SurfaceHolder holder = surfaceView.getHolder();
         //noinspection deprecation
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
