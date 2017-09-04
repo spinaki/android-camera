@@ -8,6 +8,8 @@ import android.util.Log;
 
 import java.lang.ref.WeakReference;
 
+import xyz.pinaki.android.camera.dimension.AspectRatio;
+
 /**
  * Created by pinaki on 8/11/17.
  * should contain the business logic like starting the
@@ -117,5 +119,10 @@ class Camera1Presenter implements CameraPresenter {
     @Override
     public void takePicture() {
 
+    }
+
+    @Override
+    public AspectRatio getAspectRatio() {
+        return camera1.aspectRatio;
     }
 }

@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 import xyz.pinaki.androidcamera.R;
 
@@ -21,12 +20,12 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     private ViewFinderPreview viewFinderPreview;
     private int numCallsToChange = 0;
     private CameraAPI.LensFacing currentFacing = CameraAPI.LensFacing.BACK;
-    private RelativeLayout parentLayout;
+    private AdjustableLayout parentLayout;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(TAG, "onCreateView");
-        parentLayout = (RelativeLayout) inflater.inflate(R.layout.camera_fragment, container, false);
+        parentLayout = (AdjustableLayout) inflater.inflate(R.layout.camera_fragment, container, false);
         return  parentLayout;
     }
 
@@ -71,7 +70,8 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
                 cameraPresenter.setPreview(viewFinderPreview);
                 cameraPresenter.onResume();
                 // TODO is this reqd ??
-//                parentLayout.requestLayout();
+                parentLayout.setPreview(viewFinderPreview);
+                Log.i(TAG, "invoking requestLayout"); parentLayout.requestLayout();
             }
 
             @Override

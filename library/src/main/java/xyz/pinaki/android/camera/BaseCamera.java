@@ -7,7 +7,7 @@ import xyz.pinaki.android.camera.dimension.AspectRatio;
  */
 
 abstract class BaseCamera {
-    private static final AspectRatio DEFAULT_ASPECT_RATIO = AspectRatio.of(4, 3);
+    static final AspectRatio DEFAULT_ASPECT_RATIO = AspectRatio.of(3, 2);
     public abstract boolean start();
     public abstract void stop();
     public abstract boolean isCameraOpened();

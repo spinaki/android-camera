@@ -143,7 +143,7 @@ class Camera1 extends BaseCamera {
 
         // if sizes not found: find the aspect ratio of the input sizes
         // choose the largest aspect ratio from the list.
-//        aspectRatio = AspectRatio.of(16, 9); HACK
+//        aspectRatio = AspectRatio.of(352, 288); // HACK
         SortedSet<Size> sizes = aspectRatioSortedSizesMap.get(aspectRatio);
         if (sizes == null) {
             aspectRatio = chooseAspectRatio(aspectRatioSortedSizesMap.keySet());

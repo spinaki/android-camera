@@ -27,6 +27,13 @@ public final class AspectRatio implements Comparable<AspectRatio> {
         return a;
     }
 
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
     @Override
     public int compareTo(@NonNull AspectRatio o) {
         if (equals(o)) {
@@ -35,7 +42,7 @@ public final class AspectRatio implements Comparable<AspectRatio> {
         return toDouble() > o.toDouble() ? 1 : -1;
     }
 
-    private double toDouble() {
+    public double toDouble() {
         return  (double) width / height;
     }
 
