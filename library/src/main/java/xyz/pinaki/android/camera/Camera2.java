@@ -10,6 +10,7 @@ import android.hardware.camera2.CameraManager;
  */
 
 class Camera2 extends BaseCamera {
+    private int lensFacing = CameraCharacteristics.LENS_FACING_BACK;
     @Override
     public boolean start() {
         return false;
@@ -26,8 +27,14 @@ class Camera2 extends BaseCamera {
     }
 
     @Override
-    public void setFacing(CameraAPI.LensFacing lensFacing) {
-
+    public void setFacing(CameraAPI.LensFacing l) {
+        if (l == CameraAPI.LensFacing.BACK) {
+            lensFacing = CameraCharacteristics.LENS_FACING_BACK;
+        } else if (l == CameraAPI.LensFacing.FRONT) {
+            lensFacing = CameraCharacteristics.LENS_FACING_FRONT;
+        } else {
+            throw new RuntimeException("Unknown Facing Camera!");
+        }
     }
     @Override
     public int getFacing() {
