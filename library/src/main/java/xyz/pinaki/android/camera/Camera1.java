@@ -66,7 +66,7 @@ class Camera1 extends BaseCamera {
 
     void configureParameters() {
         adjustCameraParameters(camera.getParameters());
-        // fix orientation
+        // TODO fix orientation
 //        camera.setDisplayOrientation(calcCameraRotation(mDisplayOrientation));
         setOrientation();
     }
@@ -147,6 +147,7 @@ class Camera1 extends BaseCamera {
         SortedSet<Size> sizes = aspectRatioSortedSizesMap.get(aspectRatio);
         if (sizes == null) {
             aspectRatio = chooseAspectRatio(aspectRatioSortedSizesMap.keySet());
+            Log.i(TAG, "choosing AR : " + aspectRatio);
             sizes = aspectRatioSortedSizesMap.get(aspectRatio);
         }
         final int surfaceWidth = viewFinderPreview.getWidth();
@@ -172,7 +173,7 @@ class Camera1 extends BaseCamera {
         return (activity.get().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
     }
 
-    AspectRatio chooseAspectRatio(Set<AspectRatio> aspectRatioSet) {
+    private AspectRatio chooseAspectRatio(Set<AspectRatio> aspectRatioSet) {
         if (aspectRatioSet.contains(aspectRatio)) {
             return aspectRatio;
         }

@@ -2,6 +2,7 @@ package xyz.pinaki.android.camera;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -22,12 +23,16 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     private int numCallsToChange = 0;
     private CameraAPI.LensFacing currentFacing = CameraAPI.LensFacing.BACK;
     private RelativeLayout parentView;
-    private AdjustableLayout cameraFrame;
+    private AdjustableLayout autoFitCameraView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(TAG, "onCreateView");
-        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        // TODO: should all of this be in the superclass ?
+        ActionBar a = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if (a != null) {
+            a.hide();
+        }
         parentView = (RelativeLayout) inflater.inflate(R.layout.camera_view_main, container, false);
         return parentView;
     }
@@ -65,8 +70,8 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
 //                previewContainer.setVisibility(View.INVISIBLE);
 //            }
 //        });
-        cameraFrame = (AdjustableLayout) view.findViewById(R.id.camera_adjust);
-        viewFinderPreview = new SurfaceViewPreview(getContext(), cameraFrame, new ViewFinderPreview.Callback() {
+        autoFitCameraView = (AdjustableLayout) view.findViewById(R.id.camera_adjust);
+        viewFinderPreview = new SurfaceViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
             @Override
             public void onSurfaceChanged() {
                 numCallsToChange++;
@@ -74,8 +79,10 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
                 cameraPresenter.setPreview(viewFinderPreview);
                 cameraPresenter.onResume();
                 // TODO is this reqd ??
-                cameraFrame.setPreview(viewFinderPreview);
-                Log.i(TAG, "invoking requestLayout"); parentView.requestLayout();
+                Log.i(TAG, "invoking requestLayout AR: " + cameraPresenter.getAspectRatio().toString());
+                autoFitCameraView.setPreview(viewFinderPreview);
+                autoFitCameraView.setAspectRatio(cameraPresenter.getAspectRatio());
+                autoFitCameraView.requestLayout(); // TODO is this reqd ??
             }
 
             @Override

@@ -14,6 +14,7 @@ import xyz.pinaki.android.camera.dimension.AspectRatio;
 public class AdjustableLayout extends FrameLayout {
     private static final String TAG = AdjustableLayout.class.getName();
     private ViewFinderPreview viewFinderPreview;
+    private AspectRatio aspectRatio;
     public AdjustableLayout(Context context) {
         super(context);
     }
@@ -23,6 +24,9 @@ public class AdjustableLayout extends FrameLayout {
     void setPreview (ViewFinderPreview v) {
         viewFinderPreview = v;
     }
+    void setAspectRatio(AspectRatio a) {
+        aspectRatio = a;
+    }
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         Log.i(TAG, "onMeasure");
@@ -30,19 +34,22 @@ public class AdjustableLayout extends FrameLayout {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
             return;
         }
+        if (aspectRatio == null) {
+            super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            return;
+        }
         final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        AspectRatio ratio = BaseCamera.DEFAULT_ASPECT_RATIO; // getAspectRatio(); HACK TODO fix this
-        assert ratio != null;
+//        AspectRatio aspectRatio = BaseCamera.DEFAULT_ASPECT_RATIO; // getAspectRatio(); HACK TODO fix this
         if (widthMode == MeasureSpec.EXACTLY && heightMode != MeasureSpec.EXACTLY) {
-            int height = (int) (MeasureSpec.getSize(widthMeasureSpec) * ratio.toDouble());
+            int height = (int) (MeasureSpec.getSize(widthMeasureSpec) * aspectRatio.toDouble());
             if (heightMode == MeasureSpec.AT_MOST) {
                 height = Math.min(height, MeasureSpec.getSize(heightMeasureSpec));
             }
             super.onMeasure(widthMeasureSpec,
                     MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
         } else if (widthMode != MeasureSpec.EXACTLY && heightMode == MeasureSpec.EXACTLY) {
-            int width = (int) (MeasureSpec.getSize(heightMeasureSpec) * ratio.toDouble());
+            int width = (int) (MeasureSpec.getSize(heightMeasureSpec) * aspectRatio.toDouble());
             if (widthMode == MeasureSpec.AT_MOST) {
                 width = Math.min(width, MeasureSpec.getSize(widthMeasureSpec));
             }
@@ -54,22 +61,22 @@ public class AdjustableLayout extends FrameLayout {
         if (viewFinderPreview == null) {
             return;
         }
+        Log.i(TAG, "onMeasure changing viewFinderPreview: " + aspectRatio.toString());
         // adjust the surface or texture view views
         int width = getMeasuredWidth();
         int height = getMeasuredHeight();
-        // TODO fix this
+        // TODO fix this with correct OrientationDetector
 //        if (mDisplayOrientationDetector.getLastKnownDisplayOrientation() % 180 == 0) {
-            ratio = ratio.inverse();
+        AspectRatio revAspectRatio = aspectRatio.inverse();
 //        }
-        Log.i(TAG, "onMeasure changing viewFinderPreview");
-        if (height < width * ratio.getHeight() / ratio.getWidth()) {
+        if (height < width * revAspectRatio.getHeight() / revAspectRatio.getWidth()) {
             viewFinderPreview.getView().measure(
                     MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
-                    MeasureSpec.makeMeasureSpec(width * ratio.getHeight() / ratio.getWidth(),
+                    MeasureSpec.makeMeasureSpec(width * revAspectRatio.getHeight() / revAspectRatio.getWidth(),
                             MeasureSpec.EXACTLY));
         } else {
             viewFinderPreview.getView().measure(
-                    MeasureSpec.makeMeasureSpec(height * ratio.getWidth() / ratio.getHeight(),
+                    MeasureSpec.makeMeasureSpec(height * revAspectRatio.getWidth() / revAspectRatio.getHeight(),
                             MeasureSpec.EXACTLY),
                     MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
         }

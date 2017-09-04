@@ -123,6 +123,6 @@ class Camera1Presenter implements CameraPresenter {
 
     @Override
     public AspectRatio getAspectRatio() {
-        return camera1.aspectRatio;
+        return camera1 != null ? camera1.getAspectRatio() : null;
     }
 }
