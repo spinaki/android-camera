@@ -34,6 +34,12 @@ public final class AspectRatio implements Comparable<AspectRatio> {
     public int getHeight() {
         return height;
     }
+
+    public AspectRatio inverse() {
+        //noinspection SuspiciousNameCombination
+        return AspectRatio.of(height, width);
+    }
+
     @Override
     public int compareTo(@NonNull AspectRatio o) {
         if (equals(o)) {

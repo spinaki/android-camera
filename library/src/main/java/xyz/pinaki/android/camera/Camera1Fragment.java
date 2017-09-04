@@ -2,11 +2,12 @@ package xyz.pinaki.android.camera;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import xyz.pinaki.androidcamera.R;
 
@@ -20,13 +21,15 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     private ViewFinderPreview viewFinderPreview;
     private int numCallsToChange = 0;
     private CameraAPI.LensFacing currentFacing = CameraAPI.LensFacing.BACK;
-    private AdjustableLayout parentLayout;
+    private RelativeLayout parentView;
+    private AdjustableLayout cameraFrame;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(TAG, "onCreateView");
-        parentLayout = (AdjustableLayout) inflater.inflate(R.layout.camera_fragment, container, false);
-        return  parentLayout;
+        ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        parentView = (RelativeLayout) inflater.inflate(R.layout.camera_view_main, container, false);
+        return parentView;
     }
 
     @Override
@@ -53,16 +56,17 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
 
         // captured preview
         // TODO: fix this
-        final ViewGroup previewContainer = (ViewGroup) view.findViewById(R.id.preview_container);
-        final ImageView previewImage = (ImageView) view.findViewById(R.id.preview_image);
-        final ImageView previewCloseButton = (ImageView) view.findViewById(R.id.preview_close_icon);
-        previewCloseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                previewContainer.setVisibility(View.INVISIBLE);
-            }
-        });
-        viewFinderPreview = new SurfaceViewPreview(getContext(), parentLayout, new ViewFinderPreview.Callback() {
+//        final ViewGroup previewContainer = (ViewGroup) view.findViewById(R.id.preview_container);
+//        final ImageView previewImage = (ImageView) view.findViewById(R.id.preview_image);
+//        final ImageView previewCloseButton = (ImageView) view.findViewById(R.id.preview_close_icon);
+//        previewCloseButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                previewContainer.setVisibility(View.INVISIBLE);
+//            }
+//        });
+        cameraFrame = (AdjustableLayout) view.findViewById(R.id.camera_adjust);
+        viewFinderPreview = new SurfaceViewPreview(getContext(), cameraFrame, new ViewFinderPreview.Callback() {
             @Override
             public void onSurfaceChanged() {
                 numCallsToChange++;
@@ -70,8 +74,8 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
                 cameraPresenter.setPreview(viewFinderPreview);
                 cameraPresenter.onResume();
                 // TODO is this reqd ??
-                parentLayout.setPreview(viewFinderPreview);
-                Log.i(TAG, "invoking requestLayout"); parentLayout.requestLayout();
+                cameraFrame.setPreview(viewFinderPreview);
+                Log.i(TAG, "invoking requestLayout"); parentView.requestLayout();
             }
 
             @Override

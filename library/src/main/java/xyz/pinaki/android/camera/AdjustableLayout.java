@@ -3,7 +3,7 @@ package xyz.pinaki.android.camera;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.widget.RelativeLayout;
+import android.widget.FrameLayout;
 
 import xyz.pinaki.android.camera.dimension.AspectRatio;
 
@@ -11,7 +11,7 @@ import xyz.pinaki.android.camera.dimension.AspectRatio;
  * Created by pinaki on 9/3/17.
  */
 
-public class AdjustableLayout extends RelativeLayout {
+public class AdjustableLayout extends FrameLayout {
     private static final String TAG = AdjustableLayout.class.getName();
     private ViewFinderPreview viewFinderPreview;
     public AdjustableLayout(Context context) {
@@ -32,7 +32,7 @@ public class AdjustableLayout extends RelativeLayout {
         }
         final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-        final AspectRatio ratio = BaseCamera.DEFAULT_ASPECT_RATIO; // getAspectRatio(); HACK TODO fix this
+        AspectRatio ratio = BaseCamera.DEFAULT_ASPECT_RATIO; // getAspectRatio(); HACK TODO fix this
         assert ratio != null;
         if (widthMode == MeasureSpec.EXACTLY && heightMode != MeasureSpec.EXACTLY) {
             int height = (int) (MeasureSpec.getSize(widthMeasureSpec) * ratio.toDouble());
@@ -59,7 +59,7 @@ public class AdjustableLayout extends RelativeLayout {
         int height = getMeasuredHeight();
         // TODO fix this
 //        if (mDisplayOrientationDetector.getLastKnownDisplayOrientation() % 180 == 0) {
-//            ratio = ratio.inverse();
+            ratio = ratio.inverse();
 //        }
         Log.i(TAG, "onMeasure changing viewFinderPreview");
         if (height < width * ratio.getHeight() / ratio.getWidth()) {
