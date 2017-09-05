@@ -1,5 +1,6 @@
 package xyz.pinaki.android.camera;
 
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -7,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import xyz.pinaki.androidcamera.R;
@@ -24,6 +26,8 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     private RelativeLayout parentView;
     private AdjustableLayout autoFitCameraView;
     private DisplayOrientationDetector displayOrientationDetector;
+    ViewGroup previewContainer;
+    ImageView previewImage;
     private CameraStatusCallback cameraStatusCallback = new CameraStatusCallback() {
         @Override
         public void onCameraOpen() {
@@ -32,6 +36,12 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
             autoFitCameraView.setPreview(viewFinderPreview);
             autoFitCameraView.setAspectRatio(cameraPresenter.getAspectRatio());
             autoFitCameraView.requestLayout(); // TODO is this reqd ??
+        }
+
+        @Override
+        public void onImageCaptured(Bitmap bitmap) {
+            previewContainer.setVisibility(View.VISIBLE);
+            previewImage.setImageBitmap(bitmap);
         }
     };
 
@@ -67,15 +77,15 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
 
         // captured preview
         // TODO: fix this
-//        final ViewGroup previewContainer = (ViewGroup) view.findViewById(R.id.preview_container);
-//        final ImageView previewImage = (ImageView) view.findViewById(R.id.preview_image);
-//        final ImageView previewCloseButton = (ImageView) view.findViewById(R.id.preview_close_icon);
-//        previewCloseButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                previewContainer.setVisibility(View.INVISIBLE);
-//            }
-//        });
+        previewContainer = (ViewGroup) view.findViewById(R.id.preview_container);
+        previewImage = (ImageView) view.findViewById(R.id.preview_image);
+        final ImageView previewCloseButton = (ImageView) view.findViewById(R.id.preview_close_icon);
+        previewCloseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                previewContainer.setVisibility(View.INVISIBLE);
+            }
+        });
         autoFitCameraView = (AdjustableLayout) view.findViewById(R.id.camera_adjust);
 
         viewFinderPreview = new SurfaceViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {

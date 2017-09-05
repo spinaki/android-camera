@@ -247,8 +247,6 @@ class Camera1 extends BaseCamera {
         camera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
-                // do something about taking the picture
-//                final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(data, 800);
                 // send to the presenter maybe via the thread ?
                 photoTakenCallback.onPhotoTaken(data);
             }

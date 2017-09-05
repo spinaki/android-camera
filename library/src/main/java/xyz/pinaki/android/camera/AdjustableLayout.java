@@ -40,7 +40,6 @@ public class AdjustableLayout extends FrameLayout {
         }
         final int widthMode = MeasureSpec.getMode(widthMeasureSpec);
         final int heightMode = MeasureSpec.getMode(heightMeasureSpec);
-//        AspectRatio aspectRatio = BaseCamera.DEFAULT_ASPECT_RATIO; // getAspectRatio(); HACK TODO fix this
         if (widthMode == MeasureSpec.EXACTLY && heightMode != MeasureSpec.EXACTLY) {
             int height = (int) (MeasureSpec.getSize(widthMeasureSpec) * aspectRatio.toDouble());
             if (heightMode == MeasureSpec.AT_MOST) {

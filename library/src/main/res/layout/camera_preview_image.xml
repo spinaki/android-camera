@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent" android:layout_height="match_parent" android:background="@color/primary">
+
+    <ImageView android:layout_width="match_parent" android:layout_height="wrap_content" android:adjustViewBounds="true"
+               android:scaleType="fitCenter"
+               android:id="@+id/preview_image" android:contentDescription="@string/preview_image" android:layout_alignParentTop="true"/>
+    <ImageView android:layout_width="50dp" android:layout_height="50dp" android:id="@+id/preview_close_icon"
+               android:src="@drawable/close_icon_red" android:layout_alignParentRight="true" android:layout_alignParentTop="true"
+               android:contentDescription="@string/close_icon"/>
+</RelativeLayout>

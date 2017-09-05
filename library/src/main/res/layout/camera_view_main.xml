@@ -26,5 +26,12 @@
             android:layout_alignParentBottom="true"
             android:contentDescription="@string/shutter_icon"
             android:src="@drawable/shutter_icon"/>
+    <include
+            layout="@layout/camera_preview_image"
+            android:layout_alignParentTop="true"
+            android:id="@+id/preview_container"
+            android:visibility="invisible"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
 
 </RelativeLayout>
