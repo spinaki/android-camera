@@ -15,6 +15,7 @@ public class AdjustableLayout extends FrameLayout {
     private static final String TAG = AdjustableLayout.class.getName();
     private ViewFinderPreview viewFinderPreview;
     private AspectRatio aspectRatio;
+    private int displayOrientation;
     public AdjustableLayout(Context context) {
         super(context);
     }
@@ -26,6 +27,9 @@ public class AdjustableLayout extends FrameLayout {
     }
     void setAspectRatio(AspectRatio a) {
         aspectRatio = a;
+    }
+    void setDisplayOrientation(int orientation) {
+        displayOrientation = orientation;
     }
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -64,18 +68,18 @@ public class AdjustableLayout extends FrameLayout {
         // adjust the surface or texture view views
         int width = getMeasuredWidth();
         int height = getMeasuredHeight();
-        // TODO fix this with correct OrientationDetector
-//        if (mDisplayOrientationDetector.getLastKnownDisplayOrientation() % 180 == 0) {
-        AspectRatio revAspectRatio = aspectRatio.inverse();
-//        }
-        if (height < width * revAspectRatio.getHeight() / revAspectRatio.getWidth()) {
+        AspectRatio previewAspectRatio = aspectRatio;
+        if (displayOrientation % 180 == 0) {
+            previewAspectRatio = aspectRatio.inverse();
+        }
+        if (height < width * previewAspectRatio.getHeight() / previewAspectRatio.getWidth()) {
             viewFinderPreview.getView().measure(
                     MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY),
-                    MeasureSpec.makeMeasureSpec(width * revAspectRatio.getHeight() / revAspectRatio.getWidth(),
+                    MeasureSpec.makeMeasureSpec(width * previewAspectRatio.getHeight() / previewAspectRatio.getWidth(),
                             MeasureSpec.EXACTLY));
         } else {
             viewFinderPreview.getView().measure(
-                    MeasureSpec.makeMeasureSpec(height * revAspectRatio.getWidth() / revAspectRatio.getHeight(),
+                    MeasureSpec.makeMeasureSpec(height * previewAspectRatio.getWidth() / previewAspectRatio.getHeight(),
                             MeasureSpec.EXACTLY),
                     MeasureSpec.makeMeasureSpec(height, MeasureSpec.EXACTLY));
         }

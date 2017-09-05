@@ -122,6 +122,7 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
                 public void onDisplayOrientationChanged(int displayOrientation) {
                     // update listeners
                     cameraPresenter.setDisplayOrientation(displayOrientation);
+                    autoFitCameraView.setDisplayOrientation(displayOrientation);
                 }
             };
         }
