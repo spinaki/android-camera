@@ -66,4 +66,9 @@ class Camera2Presenter implements CameraPresenter {
     public void setCameraStatusCallback(CameraStatusCallback c) {
 
     }
+
+    @Override
+    public void setDisplayOrientation(int o) {
+
+    }
 }

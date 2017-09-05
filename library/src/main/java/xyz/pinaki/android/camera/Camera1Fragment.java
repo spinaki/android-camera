@@ -23,7 +23,8 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     private CameraAPI.LensFacing currentFacing = CameraAPI.LensFacing.BACK;
     private RelativeLayout parentView;
     private AdjustableLayout autoFitCameraView;
-    private  CameraStatusCallback cameraStatusCallback = new CameraStatusCallback() {
+    private DisplayOrientationDetector displayOrientationDetector;
+    private CameraStatusCallback cameraStatusCallback = new CameraStatusCallback() {
         @Override
         public void onCameraOpen() {
             // TODO is this reqd ??
@@ -104,6 +105,23 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
             }
         });
         viewFinderPreview.start();
+        if (displayOrientationDetector == null) {
+            // the constructor has to be within one of the lifecycle event to make sure the context is not null;
+            displayOrientationDetector = new DisplayOrientationDetector(getContext()) {
+                @Override
+                public void onDisplayOrientationChanged(int displayOrientation) {
+                    // update listeners
+                    cameraPresenter.setDisplayOrientation(displayOrientation);
+                }
+            };
+        }
+        displayOrientationDetector.enable(getActivity().getWindowManager().getDefaultDisplay());
+    }
+
+    @Override
+    public void onDestroyView() {
+        displayOrientationDetector.disable();
+        super.onDestroyView();
     }
 
     @Override
@@ -114,7 +132,6 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
         // TODO or not use viewgroup here and use in fragment
         cameraPresenter.setCameraStatusCallback(cameraStatusCallback);
         cameraPresenter.onCreate();
-
     }
 
     @Override

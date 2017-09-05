@@ -15,12 +15,18 @@ abstract class BaseCamera {
     public abstract int getFacing();
     public abstract void takePicture(PhotoTakenCallback p);
     protected AspectRatio aspectRatio = DEFAULT_ASPECT_RATIO;
+    protected int displayOrientation;
     // add any call backs
 
     interface PhotoTakenCallback {
         void onPhotoTaken(byte[] data);
     }
-    public AspectRatio getAspectRatio() {
+    AspectRatio getAspectRatio() {
         return aspectRatio;
     }
+    void setOrientation(int orientation) {
+        displayOrientation = orientation;
+        // TODO: do you need to stop and restart camera1 after orientation is set ?
+    }
+
 }

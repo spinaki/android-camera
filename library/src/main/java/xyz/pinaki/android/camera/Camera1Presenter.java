@@ -38,6 +38,14 @@ class Camera1Presenter implements CameraPresenter {
     public void setCameraStatusCallback(CameraStatusCallback c) {
         cameraStatusCallback = c;
     }
+
+    @Override
+    public void setDisplayOrientation(int orientation) {
+        if (camera1 != null) {
+            camera1.setOrientation(orientation);
+        }
+    }
+
     @Override
     public void onCreate() {
         Log.i("pinaki-Camera1Presenter", "start thread");

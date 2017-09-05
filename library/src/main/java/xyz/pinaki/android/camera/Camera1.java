@@ -2,13 +2,11 @@ package xyz.pinaki.android.camera;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 
 import java.io.IOException;
@@ -66,44 +64,52 @@ class Camera1 extends BaseCamera {
 
     void configureParameters() {
         adjustCameraParameters(camera.getParameters());
-        // TODO fix orientation
-//        camera.setDisplayOrientation(calcCameraRotation(mDisplayOrientation));
-        setOrientation();
+        camera.setDisplayOrientation(calcCameraRotation(displayOrientation));
+//        setOrientation();
     }
 
-    private void setOrientation() {
+    private int calcCameraRotation(int displayOrientation) {
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         Camera.getCameraInfo(cameraId, cameraInfo);
-        int rotation = activity.get().getWindowManager().getDefaultDisplay().getRotation();
-        int degrees = 0;
-        switch (rotation) {
-            case Surface.ROTATION_0: degrees = 0; break;
-            case Surface.ROTATION_90: degrees = 90; break;
-            case Surface.ROTATION_180: degrees = 180; break;
-            case Surface.ROTATION_270: degrees = 270; break;
-        }
-        int result;
         if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            result = (cameraInfo.orientation + degrees) % 360;
-            result = (360 - result) % 360;  // compensate the mirror
+            return (360 - (cameraInfo.orientation + displayOrientation) % 360) % 360;
         } else {  // back-facing
-            result = (cameraInfo.orientation - degrees + 360) % 360;
+            return (cameraInfo.orientation - displayOrientation + 360) % 360;
         }
-        camera.setDisplayOrientation(result);
     }
+
+//    private void setOrientation() {
+//        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+//        Camera.getCameraInfo(cameraId, cameraInfo);
+//        int rotation = activity.get().getWindowManager().getDefaultDisplay().getRotation();
+//        int degrees = 0;
+//        switch (rotation) {
+//            case Surface.ROTATION_0: degrees = 0; break;
+//            case Surface.ROTATION_90: degrees = 90; break;
+//            case Surface.ROTATION_180: degrees = 180; break;
+//            case Surface.ROTATION_270: degrees = 270; break;
+//        }
+//        int result;
+//        if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+//            result = (cameraInfo.orientation + degrees) % 360;
+//            result = (360 - result) % 360;  // compensate the mirror
+//        } else {  // back-facing
+//            result = (cameraInfo.orientation - degrees + 360) % 360;
+//        }
+//        camera.setDisplayOrientation(result);
+//    }
 
     private void adjustCameraParameters(Camera.Parameters parameters) {
         Size s = chooseOptimalSize(parameters.getSupportedPreviewSizes());
         Log.i(TAG, "OptimalPreviewSize: " + s.getWidth() + ", " + s.getHeight() + ", AspectRatio: " +
                 aspectRatio);
         parameters.setPreviewSize(s.getWidth(), s.getHeight());
-        // TODO: is the following required ? -- not sure
-//        viewFinderPreview.getSurfaceHolder().setFixedSize(s.getHeight(), s.getWidth());
+        // TODO: picture and preview sizes might be different
         s = chooseOptimalSize(parameters.getSupportedPictureSizes());
         parameters.setPictureSize(s.getWidth(), s.getHeight());
         setAutoFocusInternal(parameters); // how to set focus at the correct point ?
-        // TODO: add setRotation for correct final image rotation
-        //        parameters.setRotation(calcCameraRotation(mDisplayOrientation));
+        parameters.setRotation(calcCameraRotation(displayOrientation));
+        // TODO: set flash
 //        setFlashInternal(mFlash);
         camera.setParameters(parameters);
     }
@@ -154,11 +160,14 @@ class Camera1 extends BaseCamera {
         final int surfaceHeight = viewFinderPreview.getHeight();
         int desiredWidth = surfaceWidth;
         int desiredHeight = surfaceHeight;
-        // TODO: fix this with orientation listener
-        if (isPortrait()) {
+        if (displayOrientation == 90 || displayOrientation == 270) {
             desiredWidth = surfaceHeight;
             desiredHeight = surfaceWidth;
         }
+//        if (isPortrait()) {
+//            desiredWidth = surfaceHeight;
+//            desiredHeight = surfaceWidth;
+//        }
         Size result = null;
         for (Size s: sizes) {
             if (desiredWidth <= s.getWidth() && desiredHeight <= s.getHeight()) {
@@ -169,9 +178,9 @@ class Camera1 extends BaseCamera {
         return result;
     }
     // TODO: instead of this use the orientation listener
-    private boolean isPortrait() {
-        return (activity.get().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
-    }
+//    private boolean isPortrait() {
+//        return (activity.get().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
+//    }
 
     private AspectRatio chooseAspectRatio(Set<AspectRatio> aspectRatioSet) {
         if (aspectRatioSet.contains(aspectRatio)) {
