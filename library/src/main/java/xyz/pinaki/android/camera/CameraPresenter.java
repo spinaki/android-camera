@@ -17,4 +17,5 @@ interface CameraPresenter {
     int getFacing();
     void takePicture();
     AspectRatio getAspectRatio();
+    void setCameraStatusCallback(CameraStatusCallback c);
 }

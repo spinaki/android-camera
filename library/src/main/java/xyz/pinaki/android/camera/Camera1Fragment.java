@@ -2,7 +2,6 @@ package xyz.pinaki.android.camera;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,15 +23,21 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     private CameraAPI.LensFacing currentFacing = CameraAPI.LensFacing.BACK;
     private RelativeLayout parentView;
     private AdjustableLayout autoFitCameraView;
+    private  CameraStatusCallback cameraStatusCallback = new CameraStatusCallback() {
+        @Override
+        public void onCameraOpen() {
+            // TODO is this reqd ??
+            Log.i(TAG, "invoking requestLayout AR: " + cameraPresenter.getAspectRatio().toString());
+            autoFitCameraView.setPreview(viewFinderPreview);
+            autoFitCameraView.setAspectRatio(cameraPresenter.getAspectRatio());
+            autoFitCameraView.requestLayout(); // TODO is this reqd ??
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(TAG, "onCreateView");
-        // TODO: should all of this be in the superclass ?
-        ActionBar a = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        if (a != null) {
-            a.hide();
-        }
+        // TODO: should all of this be in the superclass also the stuff in onActivityCraeted ?
         parentView = (RelativeLayout) inflater.inflate(R.layout.camera_view_main, container, false);
         return parentView;
     }
@@ -71,6 +76,7 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
 //            }
 //        });
         autoFitCameraView = (AdjustableLayout) view.findViewById(R.id.camera_adjust);
+
         viewFinderPreview = new SurfaceViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
             @Override
             public void onSurfaceChanged() {
@@ -78,11 +84,11 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
                 Log.i(TAG, "viewFinderPreview onSurfaceChanged, numCalls: " + numCallsToChange);
                 cameraPresenter.setPreview(viewFinderPreview);
                 cameraPresenter.onStart(); // starts the camera
-                // TODO is this reqd ??
-                Log.i(TAG, "invoking requestLayout AR: " + cameraPresenter.getAspectRatio().toString());
-                autoFitCameraView.setPreview(viewFinderPreview);
-                autoFitCameraView.setAspectRatio(cameraPresenter.getAspectRatio());
-                autoFitCameraView.requestLayout(); // TODO is this reqd ??
+//                // TODO is this reqd ??
+//                Log.i(TAG, "invoking requestLayout AR: " + cameraPresenter.getAspectRatio().toString());
+//                autoFitCameraView.setPreview(viewFinderPreview);
+//                autoFitCameraView.setAspectRatio(cameraPresenter.getAspectRatio());
+//                autoFitCameraView.requestLayout(); // TODO is this reqd ??
             }
 
             @Override
@@ -106,6 +112,7 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
         // TODO: fix this with the correct ViewGroup
 //        cameraPresenter.onCreate(getContext(), (ViewGroup) getView());
         // TODO or not use viewgroup here and use in fragment
+        cameraPresenter.setCameraStatusCallback(cameraStatusCallback);
         cameraPresenter.onCreate();
 
     }
@@ -146,12 +153,12 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
         Log.i(TAG, "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
         // TODO: hide action bar
-//        if (getActivity() instanceof AppCompatActivity &&
-//                ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
-//            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
-//        } else if ( getActivity() !=  null && getActivity().getActionBar() != null) {
-//            getActivity().getActionBar().hide();
-//        }
+        if (getActivity() instanceof AppCompatActivity &&
+                ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
+            ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
+        } else if ( getActivity() !=  null && getActivity().getActionBar() != null) {
+            getActivity().getActionBar().hide();
+        }
         // TODO: enable orientation listener: cameraPresenter helps somehow
 //        orientationListener = new DeviceOrientationListener(getActivity());
     }

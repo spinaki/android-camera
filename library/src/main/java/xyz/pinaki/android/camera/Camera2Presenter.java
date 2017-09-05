@@ -61,4 +61,9 @@ class Camera2Presenter implements CameraPresenter {
     public AspectRatio getAspectRatio() {
         return null;
     }
+
+    @Override
+    public void setCameraStatusCallback(CameraStatusCallback c) {
+
+    }
 }

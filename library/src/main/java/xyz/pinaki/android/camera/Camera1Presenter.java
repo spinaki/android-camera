@@ -1,7 +1,5 @@
 package xyz.pinaki.android.camera;
 
-import android.graphics.Bitmap;
-import android.hardware.Camera;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -26,14 +24,20 @@ class Camera1Presenter implements CameraPresenter {
 //    private CameraView cameraView;
     private Camera1 camera1;
     private CameraAPI.LensFacing lensFacing = CameraAPI.LensFacing.BACK;
+    // TODO: these should be populated by DI / Dependency Injection
     private WeakReference<AppCompatActivity> activity;
     private ViewFinderPreview viewFinderPreview;
+    private CameraStatusCallback cameraStatusCallback;
     // TODO: should the threading be implemented by the BasePresenter or something else ?
     private CameraHandlerThread backgroundThread;
     Camera1Presenter(AppCompatActivity a) {
         activity = new WeakReference<>(a);
     }
 
+    @Override
+    public void setCameraStatusCallback(CameraStatusCallback c) {
+        cameraStatusCallback = c;
+    }
     @Override
     public void onCreate() {
         Log.i("pinaki-Camera1Presenter", "start thread");
@@ -65,26 +69,7 @@ class Camera1Presenter implements CameraPresenter {
     }
 
     private void initThread() {
-        backgroundThread = new CameraHandlerThread("Camera1Handler", new InternalCallback(){
-            @Override
-            public void onPictureTaken(Bitmap bitmap, byte[] bytes) {
-
-            }
-            @Override
-            public void onCameraOpen(Camera camera) {
-                // TODO should camera be used ?
-
-                // create a View for the preview -- like a Surface or Texture
-                // When that is created -- setup the camera params
-                // Start the preview.
-
-            }
-
-            @Override
-            public void onBitmapProcessed(Bitmap bitmap) {
-                // process the bitmap
-            }
-        });
+        backgroundThread = new CameraHandlerThread("Camera1Handler", cameraStatusCallback);
     }
 
     // primarily used to stop camera

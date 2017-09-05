@@ -15,10 +15,10 @@ import java.lang.ref.WeakReference;
 
 final class CameraHandlerThread extends HandlerThread {
     private static String TAG = CameraHandlerThread.class.getSimpleName();
-    private final WeakReference<InternalCallback> uiCallback;
+    private final WeakReference<CameraStatusCallback> uiCallback;
     private Handler handler;
 
-    CameraHandlerThread(String name, InternalCallback i) {
+    CameraHandlerThread(String name, CameraStatusCallback i) {
         super(name);
         uiCallback = new WeakReference<>(i);
     }
@@ -42,9 +42,9 @@ final class CameraHandlerThread extends HandlerThread {
     }
 
     private static final class CameraHandler extends Handler {
-        private final WeakReference<InternalCallback> uiCallback;
+        private final WeakReference<CameraStatusCallback> uiCallback;
         private final Handler uiHandler = new Handler(Looper.getMainLooper());
-        CameraHandler(Looper looper, WeakReference<InternalCallback> i) {
+        CameraHandler(Looper looper, WeakReference<CameraStatusCallback> i) {
             super(looper);
             uiCallback = i;
         }
@@ -64,7 +64,7 @@ final class CameraHandlerThread extends HandlerThread {
                         public void run() {
                             camera1.configureParameters();
                             camera1.startPreview();
-//                            uiCallback.get().onCameraOpen(null); // TODO: Should you have onCameraOpen
+                            uiCallback.get().onCameraOpen(); // TODO: Should you have onCameraOpen
                         }
                     });
                     break;
