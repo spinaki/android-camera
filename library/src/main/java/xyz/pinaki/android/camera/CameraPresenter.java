@@ -9,8 +9,8 @@ import xyz.pinaki.android.camera.dimension.AspectRatio;
 interface CameraPresenter {
     void onCreate();
     void onDestroy();
-    boolean onResume();
-    void onPause();
+    boolean onStart();
+    void onStop();
     void setPreview(ViewFinderPreview v);
     boolean isCameraOpened();
     void setFacing(CameraAPI.LensFacing l);

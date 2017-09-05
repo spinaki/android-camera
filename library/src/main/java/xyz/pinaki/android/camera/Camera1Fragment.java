@@ -77,7 +77,7 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
                 numCallsToChange++;
                 Log.i(TAG, "viewFinderPreview onSurfaceChanged, numCalls: " + numCallsToChange);
                 cameraPresenter.setPreview(viewFinderPreview);
-                cameraPresenter.onResume();
+                cameraPresenter.onStart(); // starts the camera
                 // TODO is this reqd ??
                 Log.i(TAG, "invoking requestLayout AR: " + cameraPresenter.getAspectRatio().toString());
                 autoFitCameraView.setPreview(viewFinderPreview);
@@ -89,7 +89,7 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
             public void onSurfaceDestroyed() {
                 numCallsToChange--;
                 Log.i(TAG, "viewFinderPreview onSurfaceDestroyed");
-                cameraPresenter.onPause();
+                cameraPresenter.onStop();
             }
 
             @Override
@@ -122,10 +122,10 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
         super.onResume();
         // TODO: fix this
 //        cameraHandlerThreadOld = new CameraHandlerThreadOld();
-//        cameraHandlerThreadOld.onResume();
+//        cameraHandlerThreadOld.onStart();
 //        openCamera();
 //        orientationListener.enable();
-//        cameraPresenter.onResume();
+//        cameraPresenter.onStart();
     }
 
     @Override
@@ -133,8 +133,7 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
         Log.i(TAG, "onPause");
         super.onPause();
         // TODO: fix this
-//        cameraPresenter.onPause();
-
+//        cameraPresenter.onStop();
 //        stopAndRelease();
 //        orientationListener.disable();
 //        if (cameraHandlerThreadOld != null) {

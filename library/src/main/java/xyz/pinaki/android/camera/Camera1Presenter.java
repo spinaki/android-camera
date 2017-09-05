@@ -52,7 +52,7 @@ class Camera1Presenter implements CameraPresenter {
 
     // primarily used to open camera
     @Override
-    public boolean onResume() {
+    public boolean onStart() {
         Message m = Message.obtain();
         m.what = Camera1.CAMERA1_ACTION_OPEN;
         // TODO: do you need to pass a real Context object
@@ -89,7 +89,7 @@ class Camera1Presenter implements CameraPresenter {
 
     // primarily used to stop camera
     @Override
-    public void onPause() {
+    public void onStop() {
         if (camera1 != null) {
             camera1.stop();
             camera1 = null;

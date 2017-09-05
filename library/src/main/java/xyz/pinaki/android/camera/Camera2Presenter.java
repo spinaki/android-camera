@@ -23,12 +23,12 @@ class Camera2Presenter implements CameraPresenter {
     }
 
     @Override
-    public boolean onResume() {
+    public boolean onStart() {
         return false;
     }
 
     @Override
-    public void onPause() {
+    public void onStop() {
 
     }
 
