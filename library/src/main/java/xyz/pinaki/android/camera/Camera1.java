@@ -51,7 +51,6 @@ class Camera1 extends BaseCamera {
         // start the camera
         try {
             if (camera != null) {
-                // TODO: fix
                 stopAndRelease();
             }
             Log.i(TAG, "start camera with ID: " + cameraId);
@@ -66,7 +65,6 @@ class Camera1 extends BaseCamera {
     void configureParameters() {
         adjustCameraParameters(camera.getParameters());
         camera.setDisplayOrientation(calcCameraRotation());
-//        setOrientation();
     }
 
     private int calcCameraRotation() {
@@ -94,27 +92,6 @@ class Camera1 extends BaseCamera {
         return matrix;
     }
 
-//    private void setOrientation() {
-//        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
-//        Camera.getCameraInfo(cameraId, cameraInfo);
-//        int rotation = activity.get().getWindowManager().getDefaultDisplay().getRotation();
-//        int degrees = 0;
-//        switch (rotation) {
-//            case Surface.ROTATION_0: degrees = 0; break;
-//            case Surface.ROTATION_90: degrees = 90; break;
-//            case Surface.ROTATION_180: degrees = 180; break;
-//            case Surface.ROTATION_270: degrees = 270; break;
-//        }
-//        int result;
-//        if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-//            result = (cameraInfo.orientation + degrees) % 360;
-//            result = (360 - result) % 360;  // compensate the mirror
-//        } else {  // back-facing
-//            result = (cameraInfo.orientation - degrees + 360) % 360;
-//        }
-//        camera.setDisplayOrientation(result);
-//    }
-
     private void adjustCameraParameters(Camera.Parameters parameters) {
         Size s = chooseOptimalSize(parameters.getSupportedPreviewSizes());
         Log.i(TAG, "OptimalPreviewSize: " + s.getWidth() + ", " + s.getHeight() + ", AspectRatio: " +
@@ -124,6 +101,8 @@ class Camera1 extends BaseCamera {
         s = chooseOptimalSize(parameters.getSupportedPictureSizes());
         parameters.setPictureSize(s.getWidth(), s.getHeight());
         setAutoFocusInternal(parameters); // how to set focus at the correct point ?
+        // setRotation is commented since this has not been implemented correctly in many device (e.g., Samsung
+        // Galaxy Prime). We compensate for the rotation manually using getImageTransformMatrix
 //        parameters.setRotation(calcCameraRotation());
         // TODO: set flash
 //        setFlashInternal(mFlash);
@@ -180,10 +159,6 @@ class Camera1 extends BaseCamera {
             desiredWidth = surfaceHeight;
             desiredHeight = surfaceWidth;
         }
-//        if (isPortrait()) {
-//            desiredWidth = surfaceHeight;
-//            desiredHeight = surfaceWidth;
-//        }
         Size result = null;
         for (Size s: sizes) {
             if (desiredWidth <= s.getWidth() && desiredHeight <= s.getHeight()) {
@@ -193,10 +168,6 @@ class Camera1 extends BaseCamera {
         }
         return result;
     }
-    // TODO: instead of this use the orientation listener
-//    private boolean isPortrait() {
-//        return (activity.get().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT);
-//    }
 
     private AspectRatio chooseAspectRatio(Set<AspectRatio> aspectRatioSet) {
         if (aspectRatioSet.contains(aspectRatio)) {
@@ -225,7 +196,6 @@ class Camera1 extends BaseCamera {
     }
 
     void startPreview() {
-        Log.i(TAG, "startPreview");
         camera.startPreview();
     }
 
@@ -270,29 +240,15 @@ class Camera1 extends BaseCamera {
     }
 
     private void stopAndRelease() {
-//        if (camera != null) {
-//            previewHolder.stopCameraPreview();
-//            previewHolder.unsetCamera();
-//        }
-        // TODO: fix this
         if (camera != null) {
             camera.stopPreview();
             camera.release();
             camera = null;
         }
-//        if (callback != null) {
-//            callback.onCameraClosed();
-//        }
     }
 
-    // TODO: fix this
     private static boolean isCameraPresent(Context context) {
-        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-            // this device has a camera
-            return true;
-        } else {
-            // no camera on this device
-            return false;
-        }
+        // this device has a camera
+        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
     }
 }
