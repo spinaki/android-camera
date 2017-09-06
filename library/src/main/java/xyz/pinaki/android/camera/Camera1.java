@@ -67,6 +67,16 @@ class Camera1 extends BaseCamera {
         camera.setDisplayOrientation(calcCameraRotation());
     }
 
+    /**
+     * links:
+     * https://developer.android.com/reference/android/hardware/Camera.html#setDisplayOrientation(int)
+     * https://www.captechconsulting.com/blogs/android-camera-orientation-made-simple
+     * http://www.androidzeitgeist.com/2012/10/displaying-camera-preview-instant.html
+     * https://plus.google.com/+AndroidDevelopers/posts/jXNFNKWxsc3
+     * https://stackoverflow.com/questions/9055460/is-androids-camerainfo-orientation-correctly-documented-incorrectly-implemente
+     * https://developer.android.com/reference/android/hardware/Camera.html#setDisplayOrientation%28int%29
+     * @return
+     */
     private int calcCameraRotation() {
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         Camera.getCameraInfo(cameraId, cameraInfo);
@@ -100,7 +110,7 @@ class Camera1 extends BaseCamera {
         // TODO: picture and preview sizes might be different
         s = chooseOptimalSize(parameters.getSupportedPictureSizes());
         parameters.setPictureSize(s.getWidth(), s.getHeight());
-        setAutoFocusInternal(parameters); // how to set focus at the correct point ?
+        setAutoFocusInternal(parameters);
         // setRotation is commented since this has not been implemented correctly in many device (e.g., Samsung
         // Galaxy Prime). We compensate for the rotation manually using getImageTransformMatrix
 //        parameters.setRotation(calcCameraRotation());
@@ -230,6 +240,19 @@ class Camera1 extends BaseCamera {
         if (Looper.getMainLooper().isCurrentThread()) {
             throw new RuntimeException("Camera Cannot Take Picture in Main UI Thread");
         }
+        if (camera.getParameters() != null && camera.getParameters().getFocusMode() != null) {
+            camera.autoFocus(new Camera.AutoFocusCallback() {
+                @Override
+                public void onAutoFocus(boolean success, Camera cam) {
+                    takePictureInternal(cam, photoTakenCallback);
+                }
+            });
+        } else {
+            takePictureInternal(camera, photoTakenCallback);
+        }
+
+    }
+    private void takePictureInternal(Camera camera, final PhotoTakenCallback photoTakenCallback) {
         camera.takePicture(null, null, new Camera.PictureCallback() {
             @Override
             public void onPictureTaken(byte[] data, Camera camera) {
