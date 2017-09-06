@@ -88,7 +88,8 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
         });
         autoFitCameraView = (AdjustableLayout) view.findViewById(R.id.camera_adjust);
 
-        viewFinderPreview = new SurfaceViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
+        viewFinderPreview = new TextureViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
+//        viewFinderPreview = new SurfaceViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
             @Override
             public void onSurfaceChanged() {
                 numCallsToChange++;
@@ -115,6 +116,7 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
             }
         });
         viewFinderPreview.start();
+
         if (displayOrientationDetector == null) {
             // the constructor has to be within one of the lifecycle event to make sure the context is not null;
             displayOrientationDetector = new DisplayOrientationDetector(getContext()) {

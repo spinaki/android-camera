@@ -53,9 +53,6 @@ final class SurfaceViewPreview extends ViewFinderPreview {
     @Override
     void start() {
         surfaceView = new SurfaceView(context);
-//        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams
-//                .WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-//        surfaceView.setLayoutParams(layoutParams);
         parentView.addView(surfaceView, 0);
         final SurfaceHolder holder = surfaceView.getHolder();
         //noinspection deprecation
