@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import xyz.pinaki.android.camera.dimension.AspectRatio;
 import xyz.pinaki.android.camera.dimension.Size;
@@ -35,6 +36,7 @@ class Camera1 extends BaseCamera {
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
     private ViewFinderPreview viewFinderPreview;
     WeakReference<AppCompatActivity> activity; // TODO: set this ?
+    private final AtomicBoolean isPictureCaptureInProgress = new AtomicBoolean(false);
     Camera1(AppCompatActivity a) {
         activity = new WeakReference<>(a);
     }
@@ -253,13 +255,17 @@ class Camera1 extends BaseCamera {
 
     }
     private void takePictureInternal(Camera camera, final PhotoTakenCallback photoTakenCallback) {
-        camera.takePicture(null, null, new Camera.PictureCallback() {
-            @Override
-            public void onPictureTaken(byte[] data, Camera camera) {
-                // send to the presenter maybe via the thread ?
-                photoTakenCallback.onPhotoTaken(data);
-            }
-        });
+        if (!isPictureCaptureInProgress.getAndSet(true)) {
+            camera.takePicture(null, null, new Camera.PictureCallback() {
+                @Override
+                public void onPictureTaken(byte[] data, Camera camera) {
+                    isPictureCaptureInProgress.set(false);
+                    // send to the presenter maybe via the thread ?
+                    photoTakenCallback.onPhotoTaken(data);
+                }
+            });
+        }
+
     }
 
     private void stopAndRelease() {
