@@ -1,7 +1,7 @@
 package xyz.pinaki.android.camera;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
@@ -72,17 +72,19 @@ final class CameraHandlerThread extends HandlerThread {
                     camera1.takePicture(new BaseCamera.PhotoTakenCallback() {
                         @Override
                         public void onPhotoTaken(byte[] data) {
-                            // do something about taking the picture
-//                            final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(data, 800);
-                            final BitmapFactory.Options options = new BitmapFactory.Options();
-                            options.inJustDecodeBounds = false;
-                            final Bitmap bitmap =  BitmapFactory.decodeByteArray(data, 0, data.length, options);
-                            Log.i(TAG, "Original width, height: " + options.outWidth + ", " + options.outHeight);
+                            // TODO hack replace 800 with something meaningful from the API
+                            final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(data, 800);
+//                            final BitmapFactory.Options options = new BitmapFactory.Options();
+//                            options.inJustDecodeBounds = false;
+//                            final Bitmap bitmap =  BitmapFactory.decodeByteArray(data, 0, data.length, options);
+                            Matrix matrix = camera1.getImageTransformMatrix();
+                            final Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap
+                                    .getHeight(), matrix, false);
                             uiHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
                                     camera1.startPreview();
-                                    uiCallback.get().onImageCaptured(bitmap);
+                                    uiCallback.get().onImageCaptured(rotatedBitmap);
                                 }
                             });
                         }

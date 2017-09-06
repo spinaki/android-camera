@@ -2,6 +2,7 @@ package xyz.pinaki.android.camera;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
 import android.os.Looper;
@@ -64,18 +65,33 @@ class Camera1 extends BaseCamera {
 
     void configureParameters() {
         adjustCameraParameters(camera.getParameters());
-        camera.setDisplayOrientation(calcCameraRotation(displayOrientation));
+        camera.setDisplayOrientation(calcCameraRotation());
 //        setOrientation();
     }
 
-    private int calcCameraRotation(int displayOrientation) {
+    private int calcCameraRotation() {
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         Camera.getCameraInfo(cameraId, cameraInfo);
+        Log.i(TAG, "cameraInfo.orientation: " + cameraInfo.orientation + ", displayOrientation: " + displayOrientation);
         if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
             return (360 - (cameraInfo.orientation + displayOrientation) % 360) % 360;
         } else {  // back-facing
             return (cameraInfo.orientation - displayOrientation + 360) % 360;
         }
+    }
+
+    Matrix getImageTransformMatrix() {
+        Matrix matrix = new Matrix();
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+        Camera.getCameraInfo(cameraId, cameraInfo);
+        if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+            float[] mirrorY = {-1, 0, 0, 0, 1, 0, 0, 0, 1};
+            Matrix matrixMirrorY = new Matrix();
+            matrixMirrorY.setValues(mirrorY);
+            matrix.postConcat(matrixMirrorY);
+        }
+        matrix.postRotate(calcCameraRotation());
+        return matrix;
     }
 
 //    private void setOrientation() {
@@ -108,7 +124,7 @@ class Camera1 extends BaseCamera {
         s = chooseOptimalSize(parameters.getSupportedPictureSizes());
         parameters.setPictureSize(s.getWidth(), s.getHeight());
         setAutoFocusInternal(parameters); // how to set focus at the correct point ?
-        parameters.setRotation(calcCameraRotation(displayOrientation));
+//        parameters.setRotation(calcCameraRotation());
         // TODO: set flash
 //        setFlashInternal(mFlash);
         camera.setParameters(parameters);
