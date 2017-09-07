@@ -21,7 +21,6 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     private static final String TAG = Camera1Fragment.class.getName();
     private CameraPresenter cameraPresenter;
     private ViewFinderPreview viewFinderPreview;
-    private int numCallsToChange = 0;
     private CameraAPI.LensFacing currentFacing = CameraAPI.LensFacing.BACK;
     private RelativeLayout parentView;
     private AdjustableLayout autoFitCameraView;
@@ -31,11 +30,10 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     private CameraStatusCallback cameraStatusCallback = new CameraStatusCallback() {
         @Override
         public void onCameraOpen() {
-            // TODO is this reqd ??
             Log.i(TAG, "invoking requestLayout AR: " + cameraPresenter.getAspectRatio().toString());
             autoFitCameraView.setPreview(viewFinderPreview);
             autoFitCameraView.setAspectRatio(cameraPresenter.getAspectRatio());
-            autoFitCameraView.requestLayout(); // TODO is this reqd ??
+            autoFitCameraView.requestLayout();
         }
 
         @Override
@@ -48,7 +46,6 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.i(TAG, "onCreateView");
-        // TODO: should all of this be in the superclass also the stuff in onActivityCraeted ?
         parentView = (RelativeLayout) inflater.inflate(R.layout.camera_view_main, container, false);
         return parentView;
     }
@@ -59,9 +56,6 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
         shutterIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: Fix this
-//                takePicture();
-//                cameraPresenter.takePicture();
                 shutterClicked();
             }
         });
@@ -69,8 +63,6 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
         cameraSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: fix this cameraPresenter
-//                stopAndRelease();
                 switchCameraClicked();
             }
         });
@@ -92,20 +84,12 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
         viewFinderPreview = new SurfaceViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
             @Override
             public void onSurfaceChanged() {
-                numCallsToChange++;
-                Log.i(TAG, "viewFinderPreview onSurfaceChanged, numCalls: " + numCallsToChange);
                 cameraPresenter.setPreview(viewFinderPreview);
                 cameraPresenter.onStart(); // starts the camera
-//                // TODO is this reqd ??
-//                Log.i(TAG, "invoking requestLayout AR: " + cameraPresenter.getAspectRatio().toString());
-//                autoFitCameraView.setPreview(viewFinderPreview);
-//                autoFitCameraView.setAspectRatio(cameraPresenter.getAspectRatio());
-//                autoFitCameraView.requestLayout(); // TODO is this reqd ??
             }
 
             @Override
             public void onSurfaceDestroyed() {
-                numCallsToChange--;
                 Log.i(TAG, "viewFinderPreview onSurfaceDestroyed");
                 cameraPresenter.onStop();
             }
@@ -115,6 +99,7 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
                 Log.i(TAG, "viewFinderPreview onSurfaceCreated");
             }
         });
+
         viewFinderPreview.start();
 
         if (displayOrientationDetector == null) {
@@ -140,9 +125,6 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // TODO: fix this with the correct ViewGroup
-//        cameraPresenter.onCreate(getContext(), (ViewGroup) getView());
-        // TODO or not use viewgroup here and use in fragment
         cameraPresenter.setCameraStatusCallback(cameraStatusCallback);
         cameraPresenter.onCreate();
     }
@@ -155,34 +137,18 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
 
     @Override
     public void onResume() {
-        Log.i(TAG, "onResume");
         super.onResume();
-        // TODO: fix this
-//        cameraHandlerThreadOld = new CameraHandlerThreadOld();
-//        cameraHandlerThreadOld.onStart();
-//        openCamera();
-//        orientationListener.enable();
-//        cameraPresenter.onStart();
     }
 
     @Override
     public void onPause() {
-        Log.i(TAG, "onPause");
         super.onPause();
-        // TODO: fix this
-//        cameraPresenter.onStop();
-//        stopAndRelease();
-//        orientationListener.disable();
-//        if (cameraHandlerThreadOld != null) {
-//            cameraHandlerThreadOld.quit();
-//        }
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         Log.i(TAG, "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
-        // TODO: hide action bar
         if (getActivity() instanceof AppCompatActivity &&
                 ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
             ((AppCompatActivity) getActivity()).getSupportActionBar().hide();
