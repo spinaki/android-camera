@@ -3,6 +3,7 @@ package xyz.pinaki.android.camera;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -136,22 +137,15 @@ class Camera2 extends BaseCamera {
             captureSession = session;
             try {
                 previewRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
-                //            updateAutoFocus();
-                int[] modes = cameraCharacteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
-                if (modes == null || modes.length == 0 ||
-                        (modes.length == 1 && modes[0] == CameraCharacteristics.CONTROL_AF_MODE_OFF)) {
-                    previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
-                } else {
-                    previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
-                }
+                updateAutoFocus();
 //            updateFlash(); TODO: add later
                 previewRequestBuilder.addTarget(viewFinderPreview.getSurface());
+                cameraStatusCallback.onCameraOpen();
                 // set repeating request for preview
                 session.setRepeatingRequest(previewRequestBuilder.build(), mCaptureCallback, null);
             } catch (CameraAccessException e) {
                 e.printStackTrace();
             }
-
         }
 
         @Override
@@ -159,6 +153,16 @@ class Camera2 extends BaseCamera {
 
         }
     };
+
+    private void updateAutoFocus() {
+        int[] modes = cameraCharacteristics.get(CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES);
+        if (modes == null || modes.length == 0 ||
+                (modes.length == 1 && modes[0] == CameraCharacteristics.CONTROL_AF_MODE_OFF)) {
+            previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_OFF);
+        } else {
+            previewRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE, CaptureRequest.CONTROL_AF_MODE_CONTINUOUS_PICTURE);
+        }
+    }
 
     private static abstract class PictureCaptureCallback extends CameraCaptureSession.CaptureCallback {
         static final int STATE_PREVIEW = 0;
@@ -230,7 +234,7 @@ class Camera2 extends BaseCamera {
         abstract void onReady();
         abstract void onPreviewReady();
     };
-    private CameraCaptureSession.CaptureCallback mCaptureCallback = new PictureCaptureCallback() {
+    private PictureCaptureCallback mCaptureCallback = new PictureCaptureCallback() {
         @Override
         void onReady() {
             captureStillPicture();
@@ -238,7 +242,6 @@ class Camera2 extends BaseCamera {
 
         @Override
         void onPreviewReady() {
-            cameraStatusCallback.onCameraOpen();
         }
 
         @Override
@@ -274,7 +277,7 @@ class Camera2 extends BaseCamera {
                 @Override
                 public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request,
                                                @NonNull TotalCaptureResult result) {
-//                    unlockFocus(); // restart the preview etc.
+                    restartPreview(); // restart the preview etc.
                 }
             }, null);
 
@@ -282,6 +285,22 @@ class Camera2 extends BaseCamera {
             Log.e(TAG, "Cannot capture a still picture.", e);
         }
     }
+
+    void restartPreview() {
+        previewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER,
+                CaptureRequest.CONTROL_AF_TRIGGER_CANCEL);
+        try {
+            captureSession.capture(previewRequestBuilder.build(), mCaptureCallback, null);
+            updateAutoFocus();
+//            updateFlash();
+            previewRequestBuilder.set(CaptureRequest.CONTROL_AF_TRIGGER, CaptureRequest.CONTROL_AF_TRIGGER_IDLE);
+            captureSession.setRepeatingRequest(previewRequestBuilder.build(), mCaptureCallback, null);
+            mCaptureCallback.setState(PictureCaptureCallback.STATE_PREVIEW);
+        } catch (CameraAccessException e) {
+            Log.e(TAG, "Failed to restart camera preview.", e);
+        }
+    }
+
     private final ImageReader.OnImageAvailableListener onImageAvailableListener
             = new ImageReader.OnImageAvailableListener() {
         @Override
@@ -293,12 +312,24 @@ class Camera2 extends BaseCamera {
                     byte[] data = new byte[buffer.remaining()];
                     buffer.get(data);
                     final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(data, 800);
-                    cameraStatusCallback.onImageCaptured(bitmap); // TODO HACK send a real callback to send the real picture
+                    final Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap
+                            .getHeight(), getImageTransformMatrix(), false);
+                    cameraStatusCallback.onImageCaptured(rotatedBitmap); // TODO HACK send a real callback to send the real picture
                 }
             }
         }
 
     };
+    private Matrix getImageTransformMatrix() {
+        Matrix matrix = new Matrix();
+        if (lensFacing == CameraCharacteristics.LENS_FACING_FRONT) {
+            float[] mirrorY = {-1, 0, 0, 0, 1, 0, 0, 0, 1};
+            Matrix matrixMirrorY = new Matrix();
+            matrixMirrorY.setValues(mirrorY);
+            matrix.postConcat(matrixMirrorY);
+        }
+        return matrix;
+    }
     private void prepareImageReader(Size size) {
         // TODO: hack have the correct size;
         imageReader = ImageReader.newInstance(size.getWidth(), size.getHeight(), ImageFormat.JPEG, /* maxImages */ 2);
