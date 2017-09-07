@@ -50,6 +50,8 @@ abstract class ViewFinderPreview {
         mCallback.onSurfaceChanged();
     }
 
+    void setBufferSize(int width, int height) {
+    }
     protected void dispatchSurfaceDestroyed() {
         mCallback.onSurfaceDestroyed();
     }

@@ -21,8 +21,7 @@ import xyz.pinaki.android.camera.dimension.AspectRatio;
  */
 
 class Camera1Presenter implements CameraPresenter {
-//    private CameraView cameraView;
-    private Camera1 camera1;
+    private BaseCamera camera1;
     private CameraAPI.LensFacing lensFacing = CameraAPI.LensFacing.BACK;
     // TODO: these should be populated by DI / Dependency Injection
     private WeakReference<AppCompatActivity> activity;

@@ -133,9 +133,9 @@ final class TextureViewPreview extends ViewFinderPreview {
     }
 
     // This method is called only from Camera2.
-//    @Override
-//    void setBufferSize(int width, int height) {
-//        textureView.getSurfaceTexture().setDefaultBufferSize(width, height);
-//    }
+    @Override
+    void setBufferSize(int width, int height) {
+        textureView.getSurfaceTexture().setDefaultBufferSize(width, height);
+    }
 
 }

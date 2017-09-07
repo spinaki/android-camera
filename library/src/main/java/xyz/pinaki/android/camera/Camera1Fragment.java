@@ -88,8 +88,8 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
         });
         autoFitCameraView = (AdjustableLayout) view.findViewById(R.id.camera_adjust);
 
-        viewFinderPreview = new TextureViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
-//        viewFinderPreview = new SurfaceViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
+//        viewFinderPreview = new TextureViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
+        viewFinderPreview = new SurfaceViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
             @Override
             public void onSurfaceChanged() {
                 numCallsToChange++;

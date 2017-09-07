@@ -1,7 +1,5 @@
 package xyz.pinaki.android.camera;
 
-import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
@@ -11,16 +9,10 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 
 import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import xyz.pinaki.android.camera.dimension.AspectRatio;
 import xyz.pinaki.android.camera.dimension.Size;
 
 /**
@@ -35,15 +27,14 @@ class Camera1 extends BaseCamera {
     private Camera camera;
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
     private ViewFinderPreview viewFinderPreview;
-    WeakReference<AppCompatActivity> activity; // TODO: set this ?
     private final AtomicBoolean isPictureCaptureInProgress = new AtomicBoolean(false);
     Camera1(AppCompatActivity a) {
-        activity = new WeakReference<>(a);
+        super(a);
     }
 
     @Override
     public boolean start() { // TODO: should this take the cameraID ?
-        if (!isCameraPresent(activity.get())) {
+        if (!super.start()) {
             return false;
         }
         if (Looper.getMainLooper().isCurrentThread()) {
@@ -105,12 +96,12 @@ class Camera1 extends BaseCamera {
     }
 
     private void adjustCameraParameters(Camera.Parameters parameters) {
-        Size s = chooseOptimalSize(parameters.getSupportedPreviewSizes());
+        Size s = chooseOptimalSize(convertSizes(parameters.getSupportedPreviewSizes()));
         Log.i(TAG, "OptimalPreviewSize: " + s.getWidth() + ", " + s.getHeight() + ", AspectRatio: " +
                 aspectRatio);
         parameters.setPreviewSize(s.getWidth(), s.getHeight());
         // TODO: picture and preview sizes might be different
-        s = chooseOptimalSize(parameters.getSupportedPictureSizes());
+        s = chooseOptimalSize(convertSizes(parameters.getSupportedPictureSizes()));
         parameters.setPictureSize(s.getWidth(), s.getHeight());
         setAutoFocusInternal(parameters);
         // setRotation is commented since this has not been implemented correctly in many device (e.g., Samsung
@@ -119,6 +110,13 @@ class Camera1 extends BaseCamera {
         // TODO: set flash
 //        setFlashInternal(mFlash);
         camera.setParameters(parameters);
+    }
+    private static List<Size> convertSizes(List<Camera.Size> cameraSizes) {
+        List<Size> sizes = new ArrayList<>();
+        for (Camera.Size csize : cameraSizes) {
+            sizes.add(new Size(csize.width, csize.height));
+        }
+        return sizes;
     }
 
     private void setAutoFocusInternal(Camera.Parameters parameters) {
@@ -132,65 +130,6 @@ class Camera1 extends BaseCamera {
         } else {
             parameters.setFocusMode(modes.get(0));
         }
-    }
-
-    @SuppressWarnings("SuspiciousNameCombination")
-    private Size chooseOptimalSize(List<Camera.Size> cameraSizes) {
-        Map<AspectRatio, SortedSet<Size>> aspectRatioSortedSizesMap = new HashMap<>();
-        // get supporting preview sizes
-        for (Camera.Size csize : cameraSizes) {
-            AspectRatio a = AspectRatio.of(csize.width, csize.height);
-            SortedSet<Size>sizes = aspectRatioSortedSizesMap.get(a);
-            if (sizes == null) {
-                sizes = new TreeSet<>();
-                aspectRatioSortedSizesMap.put(a, sizes);
-            }
-            sizes.add(new Size(csize.width, csize.height));
-        }
-        Log.i(TAG, "getSupportedPreviewSizes all: " + aspectRatioSortedSizesMap.values());
-        // aspect ratio should always be populated either with default or user input values.
-        // find the sizes that have the aspect ratio as above
-
-        // if sizes found: chooseOptimalSize to find the optimal size
-        // using the surface width and height compensated by the orientation
-
-        // if sizes not found: find the aspect ratio of the input sizes
-        // choose the largest aspect ratio from the list.
-//        aspectRatio = AspectRatio.of(352, 288); // HACK
-        SortedSet<Size> sizes = aspectRatioSortedSizesMap.get(aspectRatio);
-        if (sizes == null) {
-            aspectRatio = chooseAspectRatio(aspectRatioSortedSizesMap.keySet());
-            Log.i(TAG, "choosing AR : " + aspectRatio);
-            sizes = aspectRatioSortedSizesMap.get(aspectRatio);
-        }
-        final int surfaceWidth = viewFinderPreview.getWidth();
-        final int surfaceHeight = viewFinderPreview.getHeight();
-        int desiredWidth = surfaceWidth;
-        int desiredHeight = surfaceHeight;
-        if (displayOrientation == 90 || displayOrientation == 270) {
-            desiredWidth = surfaceHeight;
-            desiredHeight = surfaceWidth;
-        }
-        Size result = null;
-        for (Size s: sizes) {
-            if (desiredWidth <= s.getWidth() && desiredHeight <= s.getHeight()) {
-                return s;
-            }
-            result = s;
-        }
-        return result;
-    }
-
-    private AspectRatio chooseAspectRatio(Set<AspectRatio> aspectRatioSet) {
-        if (aspectRatioSet.contains(aspectRatio)) {
-            return aspectRatio;
-        }
-        SortedSet<AspectRatio> aspectRatios = new TreeSet<>(aspectRatioSet);
-        return aspectRatios.last();
-    }
-
-    void setPreview(ViewFinderPreview v) {
-        viewFinderPreview = v;
     }
     void setUpPreview() {
         try {
@@ -274,10 +213,5 @@ class Camera1 extends BaseCamera {
             camera.release();
             camera = null;
         }
-    }
-
-    private static boolean isCameraPresent(Context context) {
-        // this device has a camera
-        return context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA);
     }
 }

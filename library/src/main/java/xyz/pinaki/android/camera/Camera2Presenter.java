@@ -1,5 +1,9 @@
 package xyz.pinaki.android.camera;
 
+import android.support.v7.app.AppCompatActivity;
+
+import java.lang.ref.WeakReference;
+
 import xyz.pinaki.android.camera.dimension.AspectRatio;
 
 /**
@@ -7,10 +11,27 @@ import xyz.pinaki.android.camera.dimension.AspectRatio;
  */
 
 class Camera2Presenter implements CameraPresenter {
-    CameraView cameraView;
-    Camera2Presenter(CameraView c) {
-        cameraView = c;
+    private BaseCamera camera2;
+    private CameraAPI.LensFacing lensFacing = CameraAPI.LensFacing.BACK;
+    private CameraStatusCallback cameraStatusCallback;
+    private WeakReference<AppCompatActivity> activity;
+    private ViewFinderPreview viewFinderPreview;
+
+    @Override
+    public void setCameraStatusCallback(CameraStatusCallback c) {
+        cameraStatusCallback = c;
     }
+
+    @Override
+    public void setDisplayOrientation(int orientation) {
+        if (camera2 != null) {
+            camera2.setOrientation(orientation);
+        }
+    }
+    Camera2Presenter(AppCompatActivity a) {
+        activity = new WeakReference<AppCompatActivity>(a);
+    }
+
 
     @Override
     public void onCreate() {
@@ -24,17 +45,25 @@ class Camera2Presenter implements CameraPresenter {
 
     @Override
     public boolean onStart() {
-        return false;
+        camera2 = new Camera2(activity.get());
+        camera2.setPreview(viewFinderPreview);
+        camera2.setFacing(lensFacing);
+        ((Camera2)camera2).setCameraStatusCallback(cameraStatusCallback);
+        camera2.start();
+        return true;
     }
 
     @Override
     public void onStop() {
-
+        if (camera2 != null) {
+            camera2.stop();
+            camera2 = null;
+        }
     }
 
     @Override
     public void setPreview(ViewFinderPreview v) {
-
+        viewFinderPreview = v;
     }
 
     @Override
@@ -44,7 +73,7 @@ class Camera2Presenter implements CameraPresenter {
 
     @Override
     public void setFacing(CameraAPI.LensFacing l) {
-
+        lensFacing = l;
     }
 
     @Override
@@ -54,21 +83,16 @@ class Camera2Presenter implements CameraPresenter {
 
     @Override
     public void takePicture() {
+        camera2.takePicture(new BaseCamera.PhotoTakenCallback() {
+            @Override
+            public void onPhotoTaken(byte[] data) {
 
+            }
+        });
     }
 
     @Override
     public AspectRatio getAspectRatio() {
-        return null;
-    }
-
-    @Override
-    public void setCameraStatusCallback(CameraStatusCallback c) {
-
-    }
-
-    @Override
-    public void setDisplayOrientation(int o) {
-
+        return camera2 != null ? camera2.getAspectRatio() : null;
     }
 }
