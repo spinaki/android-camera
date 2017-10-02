@@ -27,6 +27,7 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     private DisplayOrientationDetector displayOrientationDetector;
     ViewGroup previewContainer;
     ImageView previewImage;
+    private CameraController.Callback callback;
     private CameraStatusCallback cameraStatusCallback = new CameraStatusCallback() {
         @Override
         public void onCameraOpen() {
@@ -34,12 +35,14 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
             autoFitCameraView.setPreview(viewFinderPreview);
             autoFitCameraView.setAspectRatio(cameraPresenter.getAspectRatio());
             autoFitCameraView.requestLayout();
+            callback.onCameraOpened();
         }
 
         @Override
         public void onImageCaptured(Bitmap bitmap) {
             previewContainer.setVisibility(View.VISIBLE);
             previewImage.setImageBitmap(bitmap);
+            callback.onBitmapProcessed(bitmap);
         }
     };
 
@@ -80,8 +83,8 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
         });
         autoFitCameraView = (AdjustableLayout) view.findViewById(R.id.camera_adjust);
 
-//        viewFinderPreview = new TextureViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
-        viewFinderPreview = new SurfaceViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
+        viewFinderPreview = new TextureViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
+//        viewFinderPreview = new SurfaceViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
             @Override
             public void onSurfaceChanged() {
                 cameraPresenter.setPreview(viewFinderPreview);
@@ -162,6 +165,9 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     @Override
     public void setPresenter(@NonNull CameraPresenter c) {
         cameraPresenter = c;
+    }
+    public void setCallback(CameraController.Callback c) {
+        callback = c;
     }
 
     @Override

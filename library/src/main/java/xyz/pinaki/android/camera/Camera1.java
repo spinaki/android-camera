@@ -26,7 +26,6 @@ class Camera1 extends BaseCamera {
     static final int CAMERA1_ACTION_TAKE_PICTURE = 2;
     private Camera camera;
     private int cameraId = Camera.CameraInfo.CAMERA_FACING_BACK;
-    private ViewFinderPreview viewFinderPreview;
     private final AtomicBoolean isPictureCaptureInProgress = new AtomicBoolean(false);
     Camera1(AppCompatActivity a) {
         super(a);

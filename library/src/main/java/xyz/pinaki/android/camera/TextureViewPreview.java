@@ -80,10 +80,10 @@ final class TextureViewPreview extends ViewFinderPreview {
 
     // only from camera2 ??
 //    @Override
-    void setDisplayOrientation(int d) {
-        displayOrientation = d;
-        configureTransform();
-    }
+//    void setDisplayOrientation(int d) {
+//        displayOrientation = d;
+//        configureTransform();
+//    }
 
     // does nothing for camera 1 since displayOrientation is not set
     private void configureTransform() {
