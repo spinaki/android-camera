@@ -57,6 +57,7 @@ class Camera2 extends BaseCamera {
         if (!super.start()) {
             return false;
         }
+        deviceOrientationListener.enable();
         cameraManager = (CameraManager) activity.get().getSystemService(Context.CAMERA_SERVICE);
         // choose camera id by lens
         if (!chooseCameraIdByLensFacing()) {
@@ -260,6 +261,7 @@ class Camera2 extends BaseCamera {
     };
 
     void captureStillPicture() {
+        deviceOrientationListener.rememberOrientation();
         try {
             CaptureRequest.Builder picCaptureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice
                     .TEMPLATE_STILL_CAPTURE);
@@ -269,9 +271,10 @@ class Camera2 extends BaseCamera {
             // fix the orientation
             @SuppressWarnings("ConstantConditions")
             int sensorOrientation = cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
-            picCaptureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION,
-                    (sensorOrientation + displayOrientation * (lensFacing == CameraCharacteristics.LENS_FACING_FRONT
-                            ? 1 : -1) + 360) % 360);
+//            picCaptureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION,
+//                    (sensorOrientation + displayOrientation * (lensFacing == CameraCharacteristics.LENS_FACING_FRONT
+//                            ? 1 : -1) + 360) % 360);
+            picCaptureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(cameraCharacteristics));
             captureSession.stopRepeating(); // Stop preview while capturing a still picture.
             captureSession.capture(picCaptureRequestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
                 @Override
@@ -284,6 +287,24 @@ class Camera2 extends BaseCamera {
         } catch (CameraAccessException e) {
             Log.e(TAG, "Cannot capture a still picture.", e);
         }
+    }
+
+    private int getJpegOrientation(CameraCharacteristics c) {
+        int sensorOrientation = c.get(CameraCharacteristics.SENSOR_ORIENTATION);
+        Log.i(TAG, "sensorOrientation: " + sensorOrientation);
+        // Round device orientation to a multiple of 90
+//        deviceOrientation = (deviceOrientation + 45) / 90 * 90;
+        int deviceOrientation = deviceOrientationListener.getRememberedOrientation();
+        Log.i(TAG, "deviceOrientation: " + deviceOrientation);
+        // Reverse device orientation for front-facing cameras
+        boolean facingFront = c.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT;
+        if (facingFront) {
+            deviceOrientation = -deviceOrientation;
+        }
+        // Calculate desired JPEG orientation relative to camera orientation to make
+        // the image upright relative to the device orientation
+        int jpegOrientation = (sensorOrientation + deviceOrientation + 360) % 360;
+        return jpegOrientation;
     }
 
     void restartPreview() {
@@ -375,6 +396,7 @@ class Camera2 extends BaseCamera {
 
     @Override
     public void stop() {
+        deviceOrientationListener.disable();
         // stop the camera and release resources
         if (captureSession != null) {
             captureSession.close();

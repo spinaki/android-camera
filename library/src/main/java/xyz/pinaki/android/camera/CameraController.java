@@ -49,8 +49,8 @@ public class CameraController {
             }
         }
         Camera1Fragment cameraView = new Camera1Fragment();
-        CameraPresenter presenter = new Camera1Presenter(activity);
-//        CameraPresenter presenter = new Camera2Presenter(activity);
+//        CameraPresenter presenter = new Camera1Presenter(activity);
+        CameraPresenter presenter = new Camera2Presenter(activity);
         cameraView.setPresenter(presenter);
         cameraView.setCallback(callback);
         activity.getSupportFragmentManager().beginTransaction().replace(

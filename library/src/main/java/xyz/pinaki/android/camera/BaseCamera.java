@@ -24,8 +24,10 @@ abstract class BaseCamera {
     private static String TAG = BaseCamera.class.getSimpleName();
     private static final AspectRatio DEFAULT_ASPECT_RATIO = AspectRatio.of(4, 3);
     WeakReference<AppCompatActivity> activity; // TODO: set this ?
+    DeviceOrientationListener deviceOrientationListener;
     BaseCamera(AppCompatActivity a) {
         activity = new WeakReference<>(a);
+        deviceOrientationListener = new DeviceOrientationListener(a);
     }
     protected ViewFinderPreview viewFinderPreview;
     public boolean start() {
