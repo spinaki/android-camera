@@ -42,6 +42,7 @@ import android.view.OrientationEventListener;
     public void onOrientationChanged(int orientation) {
         if (orientation != ORIENTATION_UNKNOWN) {
             currentNormalizedOrientation = normalize(orientation);
+            rememberedNormalizedOrientation = currentNormalizedOrientation;
         }
     }
 

@@ -39,6 +39,7 @@ class Camera1 extends BaseCamera {
         if (Looper.getMainLooper().isCurrentThread()) {
             throw new RuntimeException("Camera Cannot Start in Main UI Thread");
         }
+        deviceOrientationListener.enable();
         // TODO: choose the camera based on ID
         // start the camera
         try {
@@ -72,11 +73,15 @@ class Camera1 extends BaseCamera {
     private int calcCameraRotation() {
         Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
         Camera.getCameraInfo(cameraId, cameraInfo);
-        Log.i(TAG, "cameraInfo.orientation: " + cameraInfo.orientation + ", displayOrientation: " + displayOrientation);
+        int rememberedOr = (360 - deviceOrientationListener.getRememberedOrientation()) % 360;
+        Log.i(TAG, "cameraInfo.orientation: " + cameraInfo.orientation +
+                ", displayOrientation: " + displayOrientation + ", rememberedOr: " + rememberedOr);
         if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-            return (360 - (cameraInfo.orientation + displayOrientation) % 360) % 360;
+//            return (360 - (cameraInfo.orientation + displayOrientation) % 360) % 360;
+            return (360 - (cameraInfo.orientation + rememberedOr) % 360) % 360;
         } else {  // back-facing
-            return (cameraInfo.orientation - displayOrientation + 360) % 360;
+//            return (cameraInfo.orientation - displayOrientation + 360) % 360;
+            return (cameraInfo.orientation - rememberedOr + 360) % 360;
         }
     }
 
@@ -120,8 +125,8 @@ class Camera1 extends BaseCamera {
 
     private void setAutoFocusInternal(Camera.Parameters parameters) {
         final List<String> modes = parameters.getSupportedFocusModes();
-        if (modes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
-            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
+        if (modes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+            parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
         } else if (modes.contains(Camera.Parameters.FOCUS_MODE_FIXED)) {
             parameters.setFocusMode(Camera.Parameters.FOCUS_MODE_FIXED);
         } else if (modes.contains(Camera.Parameters.FOCUS_MODE_INFINITY)) {
@@ -151,6 +156,7 @@ class Camera1 extends BaseCamera {
 
     @Override
     public void stop() {
+        deviceOrientationListener.disable();
         stopAndRelease();
     }
 
@@ -177,6 +183,7 @@ class Camera1 extends BaseCamera {
 
     @Override
     public void takePicture(final PhotoTakenCallback photoTakenCallback) {
+        deviceOrientationListener.rememberOrientation();
         if (Looper.getMainLooper().isCurrentThread()) {
             throw new RuntimeException("Camera Cannot Take Picture in Main UI Thread");
         }

@@ -295,7 +295,8 @@ class Camera2 extends BaseCamera {
         // Round device orientation to a multiple of 90
 //        deviceOrientation = (deviceOrientation + 45) / 90 * 90;
         int deviceOrientation = deviceOrientationListener.getRememberedOrientation();
-        Log.i(TAG, "deviceOrientation: " + deviceOrientation);
+        Log.i(TAG, "getRememberedOrientation.: " + deviceOrientation);
+        Log.i(TAG, "displayOrientation.: " + displayOrientation);
         // Reverse device orientation for front-facing cameras
         boolean facingFront = c.get(CameraCharacteristics.LENS_FACING) == CameraCharacteristics.LENS_FACING_FRONT;
         if (facingFront) {
