@@ -84,7 +84,6 @@ abstract class BaseCamera {
 
         // if sizes not found: find the aspect ratio of the input sizes
         // choose the largest aspect ratio from the list.
-//        aspectRatio = AspectRatio.of(352, 288); // HACK
         SortedSet<Size> sizes = aspectRatioSortedSizesMap.get(aspectRatio);
         if (sizes == null) {
             aspectRatio = chooseAspectRatio(aspectRatioSortedSizesMap.keySet());
@@ -95,6 +94,7 @@ abstract class BaseCamera {
         final int surfaceHeight = viewFinderPreview.getHeight();
         int desiredWidth = surfaceWidth;
         int desiredHeight = surfaceHeight;
+        Log.i(TAG, "displayOrientation in : chooseOptimalSize" + displayOrientation);
         if (displayOrientation == 90 || displayOrientation == 270) {
             desiredWidth = surfaceHeight;
             desiredHeight = surfaceWidth;

@@ -48,7 +48,7 @@ public class CameraController {
                 activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             }
         }
-        Camera1Fragment cameraView = new Camera1Fragment();
+        CameraFragment cameraView = new CameraFragment();
         CameraPresenter presenter = new Camera1Presenter(activity);
 //        CameraPresenter presenter = new Camera2Presenter(activity);
         cameraView.setPresenter(presenter);
@@ -69,7 +69,7 @@ public class CameraController {
 //            cameraFragmentOld = CameraFragmentOld.newInstance();
 //            cameraFragmentOld.setCallback(callback);
 //            activity.getSupportFragmentManager().beginTransaction().replace(
-//                    containerID, cameraFragmentOld, "Camera1Fragment").commit();
+//                    containerID, cameraFragmentOld, "CameraFragment").commit();
 //        }
     }
 

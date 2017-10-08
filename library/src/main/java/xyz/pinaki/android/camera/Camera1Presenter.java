@@ -12,7 +12,7 @@ import xyz.pinaki.android.camera.dimension.AspectRatio;
  * Created by pinaki on 8/11/17.
  * should contain the business logic like starting the
  * a. background thread & handler
- * b. apis for surface / texture which can be fed to the Camera1, Camera1Fragment -- or should this be in Camera1 /
+ * b. apis for surface / texture which can be fed to the Camera1, CameraFragment -- or should this be in Camera1 /
  * Camera2
  * c. bitmap manipulation -- subsampling
  * d. orientation fix

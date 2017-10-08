@@ -17,8 +17,8 @@ import xyz.pinaki.androidcamera.R;
  * Created by pinaki on 8/11/17.
  */
 
-public class Camera1Fragment extends BaseCameraFragment implements CameraView {
-    private static final String TAG = Camera1Fragment.class.getName();
+public class CameraFragment extends BaseCameraFragment implements CameraView {
+    private static final String TAG = CameraFragment.class.getName();
     private CameraPresenter cameraPresenter;
     private ViewFinderPreview viewFinderPreview;
     private CameraAPI.LensFacing currentFacing = CameraAPI.LensFacing.BACK;
@@ -31,7 +31,6 @@ public class Camera1Fragment extends BaseCameraFragment implements CameraView {
     private CameraStatusCallback cameraStatusCallback = new CameraStatusCallback() {
         @Override
         public void onCameraOpen() {
-            Log.i(TAG, "invoking requestLayout AR: " + cameraPresenter.getAspectRatio().toString());
             autoFitCameraView.setPreview(viewFinderPreview);
             autoFitCameraView.setAspectRatio(cameraPresenter.getAspectRatio());
             autoFitCameraView.requestLayout();
