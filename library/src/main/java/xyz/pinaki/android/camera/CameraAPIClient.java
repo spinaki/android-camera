@@ -11,7 +11,10 @@ import android.hardware.camera2.CameraMetadata;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 
+import java.util.List;
+
 import xyz.pinaki.android.camera.dimension.AspectRatio;
+import xyz.pinaki.android.camera.dimension.Size;
 
 /**
  * Created by pinaki on 10/8/17.
@@ -21,7 +24,7 @@ public final class CameraAPIClient {
     private static String TAG = CameraAPIClient.class.getSimpleName();
     private final AppCompatActivity activity;
     private final CameraAPI.PreviewType previewType;
-    private final AspectRatio aspectRatio;
+    private final AspectRatio desiredAspectRatio;
     private final CameraAPI.LensFacing lensFacing;
     private final boolean useDeprecatedCamera;
     private final CameraAPI.FlashStatus flashStatus;
@@ -32,7 +35,7 @@ public final class CameraAPIClient {
     private CameraAPIClient(Builder builder) {
         activity = builder.activity;
         previewType = builder.previewType;
-        aspectRatio = builder.aspectRatio;
+        desiredAspectRatio = builder.desiredAspectRatio;
         lensFacing = builder.lensFacing;
         useDeprecatedCamera = builder.useDeprecatedCamera;
         flashStatus = builder.flashStatus;
@@ -41,7 +44,7 @@ public final class CameraAPIClient {
 
     public interface Callback {
         void onCameraOpened();
-        void onAspectRatioAvailable();
+        void onAspectRatioAvailable(AspectRatio desired, AspectRatio chosen, List<Size> availablePreviewSizes);
         void onCameraClosed();
         void onPhotoTaken(byte[] data);
         void onBitmapProcessed(Bitmap bitmap);
@@ -66,6 +69,7 @@ public final class CameraAPIClient {
             // use camera 2 api
             cameraPresenter = new Camera2Presenter(activity);
         }
+        cameraPresenter.setDesiredAspectRatio(desiredAspectRatio);
         if (maxSizeSmallerDim != null) {
             cameraPresenter.setMaxWidthSizePixels(maxSizeSmallerDim);
         }
@@ -122,7 +126,7 @@ public final class CameraAPIClient {
     public static class Builder {
         private final AppCompatActivity activity;
         private CameraAPI.PreviewType previewType = CameraAPI.PreviewType.SURFACE_VIEW;
-        private AspectRatio aspectRatio;
+        private AspectRatio desiredAspectRatio = CameraAPI.DEFAULT_ASPECT_RATIO;
         private CameraAPI.LensFacing lensFacing = CameraAPI.LensFacing.BACK;
         private boolean useDeprecatedCamera = false;
         private CameraAPI.FlashStatus flashStatus = CameraAPI.FlashStatus.OFF;
@@ -139,8 +143,8 @@ public final class CameraAPIClient {
             lensFacing = f;
             return this;
         }
-        public Builder aspectRatio(AspectRatio a) {
-            aspectRatio = a;
+        public Builder desiredAspectRatio(AspectRatio a) {
+            desiredAspectRatio = a;
             return this;
         }
         public Builder useDeprecatedCamera(boolean b) {

@@ -6,9 +6,6 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
-
-import java.lang.ref.WeakReference;
 
 
 /**
@@ -17,12 +14,12 @@ import java.lang.ref.WeakReference;
 
 final class CameraHandlerThread extends HandlerThread {
     private static String TAG = CameraHandlerThread.class.getSimpleName();
-    private final WeakReference<CameraStatusCallback> uiCallback;
+//    private final WeakReference<CameraStatusCallback> uiCallback;
     private Handler handler;
 
-    CameraHandlerThread(String name, CameraStatusCallback i) {
+    CameraHandlerThread(String name) {
         super(name);
-        uiCallback = new WeakReference<>(i);
+//        uiCallback = new WeakReference<>(i);
     }
 
     @Override
@@ -33,7 +30,7 @@ final class CameraHandlerThread extends HandlerThread {
 
     void prepareHandler() {
         if (handler == null) {
-            handler = new CameraHandler(getLooper(), uiCallback);
+            handler = new CameraHandler(getLooper());
         }
     }
 
@@ -44,11 +41,9 @@ final class CameraHandlerThread extends HandlerThread {
     }
 
     private static final class CameraHandler extends Handler {
-        private final WeakReference<CameraStatusCallback> uiCallback;
         private final Handler uiHandler = new Handler(Looper.getMainLooper());
-        CameraHandler(Looper looper, WeakReference<CameraStatusCallback> i) {
+        CameraHandler(Looper looper) {
             super(looper);
-            uiCallback = i;
         }
         @Override
         public void handleMessage(Message msg) {
@@ -56,43 +51,47 @@ final class CameraHandlerThread extends HandlerThread {
             super.handleMessage(msg);
             switch (msg.what) {
                 case Camera1.CAMERA1_ACTION_OPEN:
-                    Log.i(TAG,"in thread to open cam");
-                    camera1.start(); // TODO: fix this -- is camera return required ?
+                    camera1.start();
                     camera1.setUpPreview();
                     uiHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             camera1.configureParameters();
                             camera1.startPreview();
-                            uiCallback.get().onCameraOpen();
+                            camera1.cameraStatusCallback.onCameraOpen();
                         }
                     });
                     break;
                 case Camera1.CAMERA1_ACTION_TAKE_PICTURE:
                     camera1.takePicture(new BaseCamera.PhotoTakenCallback() {
                         @Override
-                        public void onPhotoTaken(byte[] data) {
-                            final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(data,
-                                    camera1.getMaxWidthSize());
-//                            final BitmapFactory.Options options = new BitmapFactory.Options();
-//                            options.inJustDecodeBounds = false;
-//                            final Bitmap bitmap =  BitmapFactory.decodeByteArray(data, 0, data.length, options);
-                            Matrix matrix = camera1.getImageTransformMatrix();
-                            final Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap
-                                    .getHeight(), matrix, false);
+                        public void onPhotoTaken(final byte[] data) {
                             uiHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    camera1.startPreview();
-                                    uiCallback.get().onImageCaptured(rotatedBitmap);
+                                    camera1.cameraStatusCallback.onPhotoTaken(data);
                                 }
                             });
+                            processBitmap(camera1, data);
                         }
                     });
                     break;
                 default:
                     throw new RuntimeException("Unknown Action In CameraHandlerThred with what: " + msg.what);
             }
+        }
+        private void processBitmap(final Camera1 camera1, byte[] data) {
+            final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(data, camera1.getMaxWidthSize());
+            Matrix matrix = camera1.getImageTransformMatrix();
+            final Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap
+                    .getHeight(), matrix, false);
+            uiHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    camera1.startPreview();
+                    camera1.cameraStatusCallback.onBitmapProcessed(rotatedBitmap);
+                }
+            });
         }
     }
 }

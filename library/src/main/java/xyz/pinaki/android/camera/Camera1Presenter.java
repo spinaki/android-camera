@@ -30,6 +30,7 @@ class Camera1Presenter implements CameraPresenter {
     private CameraStatusCallback cameraStatusCallback;
     // TODO: should the threading be implemented by the BasePresenter or something else ?
     private CameraHandlerThread backgroundThread;
+    private AspectRatio desiredAspectRatio;
     Camera1Presenter(AppCompatActivity a) {
         activity = new WeakReference<>(a);
     }
@@ -44,6 +45,11 @@ class Camera1Presenter implements CameraPresenter {
         if (camera1 != null) {
             camera1.setOrientation(orientation);
         }
+    }
+
+    @Override
+    public void setDesiredAspectRatio(AspectRatio a) {
+        desiredAspectRatio = a;
     }
 
     @Override
@@ -72,13 +78,15 @@ class Camera1Presenter implements CameraPresenter {
         camera1.setFacing(lensFacing);
         camera1.setPreview(viewFinderPreview);
         camera1.setMaxWidthSize(maxWidthSize);
+        camera1.setCameraStatusCallback(cameraStatusCallback);
+        camera1.setDesiredAspectRatio(desiredAspectRatio);
         m.obj = camera1;
         backgroundThread.queueMessage(m);
         return true;
     }
 
     private void initThread() {
-        backgroundThread = new CameraHandlerThread("Camera1Handler", cameraStatusCallback);
+        backgroundThread = new CameraHandlerThread("Camera1Handler");
     }
 
     // primarily used to stop camera

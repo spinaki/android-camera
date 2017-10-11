@@ -1,11 +1,14 @@
 package xyz.pinaki.android.camera;
 
+import xyz.pinaki.android.camera.dimension.AspectRatio;
+
 /**
  * Created by pinaki on 8/11/17.
  */
 
 public class CameraAPI {
     static final int DEFAULT_MAX_IMAGE_WIDTH = 800;
+    static final AspectRatio DEFAULT_ASPECT_RATIO = AspectRatio.of(4, 3);
     public static final class LensFacing {
         private final String name;
         private LensFacing(String s) {

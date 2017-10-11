@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import xyz.pinaki.android.camera.dimension.AspectRatio;
 import xyz.pinaki.android.camera.dimension.Size;
 
 /**
@@ -42,16 +43,11 @@ class Camera2 extends BaseCamera {
     private Size capturedPictureSize;
     private CameraDevice cameraDevice;
     private CameraCaptureSession captureSession;
-    private CameraStatusCallback cameraStatusCallback;
     private CaptureRequest.Builder previewRequestBuilder;
 
     Camera2(AppCompatActivity a) {
         super(a);
     }
-    public void setCameraStatusCallback(CameraStatusCallback c) {
-        cameraStatusCallback = c;
-    }
-
     @Override
     public boolean start() {
         if (!super.start()) {
@@ -69,7 +65,10 @@ class Camera2 extends BaseCamera {
             throw new IllegalStateException("Failed to get configuration map: " + cameraId);
         }
         android.util.Size[] sizes = info.getOutputSizes(viewFinderPreview.gePreviewType());
-        previewImageSize = chooseOptimalSize(convertSizes(sizes));
+        AspectRatio desiredAspectRatio = AspectRatio.of(aspectRatio.getWidth(), aspectRatio.getHeight());
+        List<Size> availableSizes = convertSizes(sizes);
+        previewImageSize = chooseOptimalSize(availableSizes);
+        cameraStatusCallback.onAspectRatioAvailable(desiredAspectRatio, aspectRatio, availableSizes);
         sizes = info.getOutputSizes(ImageFormat.JPEG);
         capturedPictureSize = chooseOptimalSize(convertSizes(sizes));
         // prepare image reader
@@ -329,7 +328,7 @@ class Camera2 extends BaseCamera {
                     final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(data, getMaxWidthSize());
                     final Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap
                             .getHeight(), getImageTransformMatrix(), false);
-                    cameraStatusCallback.onImageCaptured(rotatedBitmap);
+                    cameraStatusCallback.onBitmapProcessed(rotatedBitmap);
                 }
             }
         }

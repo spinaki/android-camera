@@ -15,9 +15,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import xyz.pinaki.android.camera.CameraAPI;
 import xyz.pinaki.android.camera.CameraAPIClient;
+import xyz.pinaki.android.camera.dimension.AspectRatio;
+import xyz.pinaki.android.camera.dimension.Size;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_WRITE = 1;
@@ -36,8 +39,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void launchCamera() {
-        apiClient = new CameraAPIClient.Builder(this).previewType(CameraAPI.PreviewType.TEXTURE_VIEW).
-                maxSizeSmallerDimPixels(1000).build();
+        AspectRatio aspectRatio = AspectRatio.of(4, 3);
+        apiClient = new CameraAPIClient.Builder(this).
+                previewType(CameraAPI.PreviewType.TEXTURE_VIEW).
+                maxSizeSmallerDimPixels(1000).
+                desiredAspectRatio(aspectRatio).
+                build();
         CameraAPIClient.Callback callback = new CameraAPIClient.Callback() {
             @Override
             public void onCameraOpened() {
@@ -45,8 +52,8 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAspectRatioAvailable() {
-                Log.i(TAG, "onAspectRatioAvailable");
+            public void onAspectRatioAvailable(AspectRatio desired, AspectRatio chosen, List<Size> availableSizes) {
+                Log.i(TAG, "onAspectRatio: desired "+ desired + ", chosen: " + chosen + ", sizes" + availableSizes);
             }
 
             @Override
@@ -56,26 +63,24 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onPhotoTaken(byte[] data) {
-                Log.i(TAG, "onPhotoTaken data length" + data.length);
+                Log.i(TAG, "onPhotoTaken data length: " + data.length);
             }
 
             @Override
             public void onBitmapProcessed(Bitmap bitmap) {
-                Log.i(TAG, "onBitmapProcessed dimensions" + bitmap.getWidth() + ", " + bitmap.getHeight());
+                Log.i(TAG, "onBitmapProcessed dimensions: " + bitmap.getWidth() + ", " + bitmap.getHeight());
                 // save the image for testing
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
                 String imageFileName = "JPEG_" + timeStamp + "_";
                 File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
                 FileOutputStream fos = null;
-
-
                 try {
                     File image = File.createTempFile(
                             imageFileName,  /* prefix */
                             ".jpg",         /* suffix */
                             storageDir      /* directory */
                     );
-                    Log.i("PIANKI-STORAGE", image.getAbsolutePath());
+                    Log.i("STORAGE", image.getAbsolutePath());
                     fos = new FileOutputStream(image);
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
                 } catch (IOException e) {

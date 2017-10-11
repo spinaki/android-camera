@@ -11,6 +11,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import java.util.List;
+
+import xyz.pinaki.android.camera.dimension.AspectRatio;
+import xyz.pinaki.android.camera.dimension.Size;
 import xyz.pinaki.androidcamera.R;
 
 /**
@@ -28,21 +32,36 @@ public class CameraFragment extends BaseCameraFragment implements CameraView {
     private DisplayOrientationDetector displayOrientationDetector;
     ViewGroup previewContainer;
     ImageView previewImage;
-    private CameraAPIClient.Callback callback;
+    private CameraAPIClient.Callback apiCallback;
     private CameraStatusCallback cameraStatusCallback = new CameraStatusCallback() {
         @Override
         public void onCameraOpen() {
             autoFitCameraView.setPreview(viewFinderPreview);
             autoFitCameraView.setAspectRatio(cameraPresenter.getAspectRatio());
             autoFitCameraView.requestLayout();
-            callback.onCameraOpened();
+            apiCallback.onCameraOpened();
         }
 
         @Override
-        public void onImageCaptured(Bitmap bitmap) {
+        public void onPhotoTaken(byte[] data) {
+            apiCallback.onPhotoTaken(data);
+        }
+
+        @Override
+        public void onBitmapProcessed(Bitmap bitmap) {
             previewContainer.setVisibility(View.VISIBLE);
             previewImage.setImageBitmap(bitmap);
-            callback.onBitmapProcessed(bitmap);
+            apiCallback.onBitmapProcessed(bitmap);
+        }
+
+        @Override
+        public void onCameraClosed() {
+            apiCallback.onCameraClosed();
+        }
+
+        @Override
+        public void onAspectRatioAvailable(AspectRatio desired, AspectRatio chosen, List<Size> availablePreviewSizes) {
+            apiCallback.onAspectRatioAvailable(desired, chosen, availablePreviewSizes);
         }
     };
 
@@ -69,9 +88,6 @@ public class CameraFragment extends BaseCameraFragment implements CameraView {
                 switchCameraClicked();
             }
         });
-
-        // captured preview
-        // TODO: fix this
         previewContainer = (ViewGroup) view.findViewById(R.id.preview_container);
         previewImage = (ImageView) view.findViewById(R.id.preview_image);
         final ImageView previewCloseButton = (ImageView) view.findViewById(R.id.preview_close_icon);
@@ -137,6 +153,7 @@ public class CameraFragment extends BaseCameraFragment implements CameraView {
     @Override
     public void onDestroy() {
         cameraPresenter.onDestroy();
+        cameraStatusCallback.onCameraClosed();
         super.onDestroy();
     }
 
@@ -175,7 +192,7 @@ public class CameraFragment extends BaseCameraFragment implements CameraView {
     }
 
     public void setCallback(CameraAPIClient.Callback c) {
-        callback = c;
+        apiCallback = c;
     }
 
     @Override

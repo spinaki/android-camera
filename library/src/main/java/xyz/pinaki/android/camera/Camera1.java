@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import xyz.pinaki.android.camera.dimension.AspectRatio;
 import xyz.pinaki.android.camera.dimension.Size;
 
 /**
@@ -100,9 +101,12 @@ class Camera1 extends BaseCamera {
     }
 
     private void adjustCameraParameters(Camera.Parameters parameters) {
-        Size s = chooseOptimalSize(convertSizes(parameters.getSupportedPreviewSizes()));
-        Log.i(TAG, "OptimalPreviewSize: " + s.getWidth() + ", " + s.getHeight() + ", AspectRatio: " +
-                aspectRatio);
+        AspectRatio desiredAspectRatio = AspectRatio.of(aspectRatio.getWidth(), aspectRatio.getHeight()); // original AR
+        List<Size> availableSizes = convertSizes(parameters.getSupportedPreviewSizes());
+        Size s = chooseOptimalSize(availableSizes);
+        Log.i(TAG, "OptimalPreviewSize: " + s.getWidth() + ", " + s.getHeight() + ", AspectRatio: " + aspectRatio);
+        cameraStatusCallback.onAspectRatioAvailable(desiredAspectRatio, aspectRatio, availableSizes);
+
         parameters.setPreviewSize(s.getWidth(), s.getHeight());
         // TODO: picture and preview sizes might be different
         s = chooseOptimalSize(convertSizes(parameters.getSupportedPictureSizes()));

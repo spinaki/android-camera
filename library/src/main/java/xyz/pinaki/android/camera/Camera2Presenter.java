@@ -17,6 +17,7 @@ class Camera2Presenter implements CameraPresenter {
     private CameraStatusCallback cameraStatusCallback;
     private WeakReference<AppCompatActivity> activity;
     private ViewFinderPreview viewFinderPreview;
+    private AspectRatio desiredAspectRatio;
 
     @Override
     public void setCameraStatusCallback(CameraStatusCallback c) {
@@ -28,6 +29,10 @@ class Camera2Presenter implements CameraPresenter {
         if (camera2 != null) {
             camera2.setOrientation(orientation);
         }
+    }
+    @Override
+    public void setDesiredAspectRatio(AspectRatio a) {
+        desiredAspectRatio = a;
     }
     Camera2Presenter(AppCompatActivity a) {
         activity = new WeakReference<AppCompatActivity>(a);
@@ -50,7 +55,8 @@ class Camera2Presenter implements CameraPresenter {
         camera2.setPreview(viewFinderPreview);
         camera2.setFacing(lensFacing);
         camera2.setMaxWidthSize(maxWidthSize);
-        ((Camera2)camera2).setCameraStatusCallback(cameraStatusCallback);
+        camera2.setCameraStatusCallback(cameraStatusCallback);
+        camera2.setDesiredAspectRatio(desiredAspectRatio);
         camera2.start();
         return true;
     }

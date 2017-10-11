@@ -22,15 +22,18 @@ import xyz.pinaki.android.camera.dimension.Size;
 
 abstract class BaseCamera {
     private static String TAG = BaseCamera.class.getSimpleName();
-    private static final AspectRatio DEFAULT_ASPECT_RATIO = AspectRatio.of(4, 3);
-    WeakReference<AppCompatActivity> activity; // TODO: set this ?
+    WeakReference<AppCompatActivity> activity;
     DeviceOrientationListener deviceOrientationListener;
     private int maxWidthSize = CameraAPI.DEFAULT_MAX_IMAGE_WIDTH;
+    CameraStatusCallback cameraStatusCallback;
     BaseCamera(AppCompatActivity a) {
         activity = new WeakReference<>(a);
         deviceOrientationListener = new DeviceOrientationListener(a);
     }
     protected ViewFinderPreview viewFinderPreview;
+    void setCameraStatusCallback(CameraStatusCallback c) {
+        cameraStatusCallback = c;
+    }
     public boolean start() {
         if (!isCameraPresent(activity.get())) {
             return false;
@@ -48,7 +51,7 @@ abstract class BaseCamera {
     public abstract void setFacing(CameraAPI.LensFacing lensFacing);
     public abstract int getFacing();
     public abstract void takePicture(PhotoTakenCallback p);
-    protected AspectRatio aspectRatio = DEFAULT_ASPECT_RATIO;
+    protected AspectRatio aspectRatio = CameraAPI.DEFAULT_ASPECT_RATIO;
     protected int displayOrientation;
     // add any call backs
 
@@ -57,6 +60,9 @@ abstract class BaseCamera {
     }
     AspectRatio getAspectRatio() {
         return aspectRatio;
+    }
+    void setDesiredAspectRatio(AspectRatio a) {
+        aspectRatio = a;
     }
     void setOrientation(int orientation) {
         displayOrientation = orientation;
@@ -101,7 +107,7 @@ abstract class BaseCamera {
         final int surfaceHeight = viewFinderPreview.getHeight();
         int desiredWidth = surfaceWidth;
         int desiredHeight = surfaceHeight;
-        Log.i(TAG, "displayOrientation in : chooseOptimalSize" + displayOrientation);
+        Log.i(TAG, "displayOrientation in : chooseOptimalSize " + displayOrientation);
         if (displayOrientation == 90 || displayOrientation == 270) {
             desiredWidth = surfaceHeight;
             desiredHeight = surfaceWidth;
