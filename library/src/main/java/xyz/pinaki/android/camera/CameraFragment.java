@@ -21,13 +21,14 @@ public class CameraFragment extends BaseCameraFragment implements CameraView {
     private static final String TAG = CameraFragment.class.getName();
     private CameraPresenter cameraPresenter;
     private ViewFinderPreview viewFinderPreview;
+    private CameraAPI.PreviewType previewType;
     private CameraAPI.LensFacing currentFacing = CameraAPI.LensFacing.BACK;
     private RelativeLayout parentView;
     private AdjustableLayout autoFitCameraView;
     private DisplayOrientationDetector displayOrientationDetector;
     ViewGroup previewContainer;
     ImageView previewImage;
-    private CameraController.Callback callback;
+    private CameraAPIClient.Callback callback;
     private CameraStatusCallback cameraStatusCallback = new CameraStatusCallback() {
         @Override
         public void onCameraOpen() {
@@ -81,9 +82,7 @@ public class CameraFragment extends BaseCameraFragment implements CameraView {
             }
         });
         autoFitCameraView = (AdjustableLayout) view.findViewById(R.id.camera_adjust);
-
-//        viewFinderPreview = new TextureViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
-        viewFinderPreview = new SurfaceViewPreview(getContext(), autoFitCameraView, new ViewFinderPreview.Callback() {
+        ViewFinderPreview.Callback viwefinderCallback = new ViewFinderPreview.Callback() {
             @Override
             public void onSurfaceChanged() {
                 cameraPresenter.setPreview(viewFinderPreview);
@@ -100,8 +99,12 @@ public class CameraFragment extends BaseCameraFragment implements CameraView {
             public void onSurfaceCreated() {
                 Log.i(TAG, "viewFinderPreview onSurfaceCreated");
             }
-        });
-
+        };
+        if(previewType == CameraAPI.PreviewType.TEXTURE_VIEW) {
+            viewFinderPreview = new TextureViewPreview(getContext(), autoFitCameraView, viwefinderCallback);
+        } else {
+            viewFinderPreview = new SurfaceViewPreview(getContext(), autoFitCameraView, viwefinderCallback);
+        }
         viewFinderPreview.start();
 
         if (displayOrientationDetector == null) {
@@ -165,7 +168,13 @@ public class CameraFragment extends BaseCameraFragment implements CameraView {
     public void setPresenter(@NonNull CameraPresenter c) {
         cameraPresenter = c;
     }
-    public void setCallback(CameraController.Callback c) {
+
+    @Override
+    public void setPreviewType(CameraAPI.PreviewType p) {
+        previewType = p;
+    }
+
+    public void setCallback(CameraAPIClient.Callback c) {
         callback = c;
     }
 

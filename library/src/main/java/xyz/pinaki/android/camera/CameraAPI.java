@@ -15,8 +15,21 @@ public class CameraAPI {
     }
 
     public static final class FlashStatus {
-        public static final int OFF = 0;
-        public static final int ON = 0;
+        private final String name;
+        private FlashStatus(String n) {
+            name = n;
+        }
+        public static final FlashStatus OFF = new FlashStatus("off");
+        public static final FlashStatus ON = new FlashStatus("on");
+    }
+
+    public static final class PreviewType {
+        private final String name;
+        private PreviewType(String s) {
+            name = s;
+        }
+        public static final PreviewType SURFACE_VIEW = new PreviewType("surface_view");
+        public static final PreviewType TEXTURE_VIEW = new PreviewType("texture_view");
     }
 
     private final BaseCamera baseCamera;

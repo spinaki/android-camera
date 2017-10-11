@@ -52,7 +52,8 @@ public class CameraController {
         CameraPresenter presenter = new Camera1Presenter(activity);
 //        CameraPresenter presenter = new Camera2Presenter(activity);
         cameraView.setPresenter(presenter);
-        cameraView.setCallback(callback);
+        // TODO: this has to be fixed
+//        cameraView.setCallback(callback);
         activity.getSupportFragmentManager().beginTransaction().replace(
                 containerID, cameraView, "Camera1FragmentNew").commit();
 
@@ -108,7 +109,6 @@ public class CameraController {
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-
         return true;
     }
 }

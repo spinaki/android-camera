@@ -75,6 +75,6 @@ public final class AspectRatio implements Comparable<AspectRatio> {
 
     @Override
     public String toString() {
-        return width + ", " + height;
+        return width + "/" + height;
     }
 }

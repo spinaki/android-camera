@@ -16,11 +16,13 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import xyz.pinaki.android.camera.CameraController;
+import xyz.pinaki.android.camera.CameraAPI;
+import xyz.pinaki.android.camera.CameraAPIClient;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_WRITE = 1;
     private static final String TAG = MainActivity.class.getSimpleName();
+    CameraAPIClient apiClient;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -34,10 +36,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void launchCamera() {
-        CameraController.Callback callback = new CameraController.Callback() {
+        apiClient = new CameraAPIClient.Builder(this).previewType(CameraAPI.PreviewType.TEXTURE_VIEW).build();
+        CameraAPIClient.Callback callback = new CameraAPIClient.Callback() {
             @Override
             public void onCameraOpened() {
                 Log.i(TAG, "onCameraOpened");
+            }
+
+            @Override
+            public void onAspectRatioAvailable() {
+                Log.i(TAG, "onAspectRatioAvailable");
             }
 
             @Override
@@ -81,7 +89,8 @@ public class MainActivity extends AppCompatActivity {
 
             }
         };
-        CameraController.getInstance().launch(this, R.id.container, callback);
+        apiClient.start(R.id.container, callback);
+
     }
 
     private void requestWritePermission() {
@@ -96,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onDestroy() {
-        CameraController.getInstance().stop();
+        apiClient.stop();
         super.onDestroy();
     }
 
