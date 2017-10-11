@@ -36,7 +36,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void launchCamera() {
-        apiClient = new CameraAPIClient.Builder(this).previewType(CameraAPI.PreviewType.TEXTURE_VIEW).build();
+        apiClient = new CameraAPIClient.Builder(this).previewType(CameraAPI.PreviewType.TEXTURE_VIEW).
+                maxSizeSmallerDimPixels(1000).build();
         CameraAPIClient.Callback callback = new CameraAPIClient.Callback() {
             @Override
             public void onCameraOpened() {

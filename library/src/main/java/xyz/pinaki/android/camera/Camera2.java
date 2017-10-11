@@ -99,8 +99,6 @@ class Camera2 extends BaseCamera {
         @Override
         public void onOpened(@NonNull CameraDevice camera) {
             cameraDevice = camera;
-            // TODO: hack send the correct calback which will relayout the data
-//            mCallback.onCameraOpened();
             startCaptureSession();
         }
 
@@ -269,11 +267,6 @@ class Camera2 extends BaseCamera {
             picCaptureRequestBuilder.set(CaptureRequest.CONTROL_AF_MODE,
                     previewRequestBuilder.get(CaptureRequest.CONTROL_AF_MODE));
             // fix the orientation
-            @SuppressWarnings("ConstantConditions")
-            int sensorOrientation = cameraCharacteristics.get(CameraCharacteristics.SENSOR_ORIENTATION);
-//            picCaptureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION,
-//                    (sensorOrientation + displayOrientation * (lensFacing == CameraCharacteristics.LENS_FACING_FRONT
-//                            ? 1 : -1) + 360) % 360);
             picCaptureRequestBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(cameraCharacteristics));
             captureSession.stopRepeating(); // Stop preview while capturing a still picture.
             captureSession.capture(picCaptureRequestBuilder.build(), new CameraCaptureSession.CaptureCallback() {
@@ -333,10 +326,10 @@ class Camera2 extends BaseCamera {
                     ByteBuffer buffer = planes[0].getBuffer();
                     byte[] data = new byte[buffer.remaining()];
                     buffer.get(data);
-                    final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(data, 800);
+                    final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(data, getMaxWidthSize());
                     final Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap
                             .getHeight(), getImageTransformMatrix(), false);
-                    cameraStatusCallback.onImageCaptured(rotatedBitmap); // TODO HACK send a real callback to send the real picture
+                    cameraStatusCallback.onImageCaptured(rotatedBitmap);
                 }
             }
         }

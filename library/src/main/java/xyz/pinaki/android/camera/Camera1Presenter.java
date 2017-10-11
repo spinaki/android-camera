@@ -23,6 +23,7 @@ import xyz.pinaki.android.camera.dimension.AspectRatio;
 class Camera1Presenter implements CameraPresenter {
     private BaseCamera camera1;
     private CameraAPI.LensFacing lensFacing = CameraAPI.LensFacing.BACK;
+    private int maxWidthSize = CameraAPI.DEFAULT_MAX_IMAGE_WIDTH;
     // TODO: these should be populated by DI / Dependency Injection
     private WeakReference<AppCompatActivity> activity;
     private ViewFinderPreview viewFinderPreview;
@@ -70,6 +71,7 @@ class Camera1Presenter implements CameraPresenter {
         camera1 = new Camera1(activity.get());
         camera1.setFacing(lensFacing);
         camera1.setPreview(viewFinderPreview);
+        camera1.setMaxWidthSize(maxWidthSize);
         m.obj = camera1;
         backgroundThread.queueMessage(m);
         return true;
@@ -91,6 +93,11 @@ class Camera1Presenter implements CameraPresenter {
     @Override
     public void setPreview(ViewFinderPreview v) {
         viewFinderPreview = v;
+    }
+
+    @Override
+    public void setMaxWidthSizePixels(int s) {
+        maxWidthSize = s;
     }
 
     @Override

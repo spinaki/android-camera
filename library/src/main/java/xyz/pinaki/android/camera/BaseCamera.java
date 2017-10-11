@@ -25,6 +25,7 @@ abstract class BaseCamera {
     private static final AspectRatio DEFAULT_ASPECT_RATIO = AspectRatio.of(4, 3);
     WeakReference<AppCompatActivity> activity; // TODO: set this ?
     DeviceOrientationListener deviceOrientationListener;
+    private int maxWidthSize = CameraAPI.DEFAULT_MAX_IMAGE_WIDTH;
     BaseCamera(AppCompatActivity a) {
         activity = new WeakReference<>(a);
         deviceOrientationListener = new DeviceOrientationListener(a);
@@ -35,6 +36,12 @@ abstract class BaseCamera {
             return false;
         }
         return true;
+    }
+    void setMaxWidthSize(int s) {
+        maxWidthSize = s;
+    }
+    int getMaxWidthSize() {
+        return maxWidthSize;
     }
     public abstract void stop();
     public abstract boolean isCameraOpened();

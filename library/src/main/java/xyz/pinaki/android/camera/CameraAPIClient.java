@@ -26,6 +26,7 @@ public final class CameraAPIClient {
     private final boolean useDeprecatedCamera;
     private final CameraAPI.FlashStatus flashStatus;
     private CameraFragment cameraView;
+    private final Integer maxSizeSmallerDim;
     private boolean shouldFixOrientation = true;
 
     private CameraAPIClient(Builder builder) {
@@ -35,6 +36,7 @@ public final class CameraAPIClient {
         lensFacing = builder.lensFacing;
         useDeprecatedCamera = builder.useDeprecatedCamera;
         flashStatus = builder.flashStatus;
+        maxSizeSmallerDim = builder.maxSizeSmallerDim;
     }
 
     public interface Callback {
@@ -56,13 +58,18 @@ public final class CameraAPIClient {
             fixOrientation(activity);
         }
         cameraView = new CameraFragment();
+        CameraPresenter cameraPresenter;
         if (useDeprecatedCamera || !isCamera2Supported(activity)) {
             // use dep camera api
-            cameraView.setPresenter(new Camera1Presenter(activity));
+            cameraPresenter = new Camera1Presenter(activity);
         } else {
             // use camera 2 api
-            cameraView.setPresenter(new Camera2Presenter(activity));
+            cameraPresenter = new Camera2Presenter(activity);
         }
+        if (maxSizeSmallerDim != null) {
+            cameraPresenter.setMaxWidthSizePixels(maxSizeSmallerDim);
+        }
+        cameraView.setPresenter(cameraPresenter);
         cameraView.setPreviewType(previewType);
         cameraView.setCallback(callback);
         activity.getSupportFragmentManager().beginTransaction().
@@ -119,6 +126,7 @@ public final class CameraAPIClient {
         private CameraAPI.LensFacing lensFacing = CameraAPI.LensFacing.BACK;
         private boolean useDeprecatedCamera = false;
         private CameraAPI.FlashStatus flashStatus = CameraAPI.FlashStatus.OFF;
+        private Integer maxSizeSmallerDim = CameraAPI.DEFAULT_MAX_IMAGE_WIDTH;
         // private int maxWidth; // max width of smaller dimension
         public Builder(AppCompatActivity a) {
             activity = a;
@@ -141,6 +149,10 @@ public final class CameraAPIClient {
         }
         public Builder flashStatus(CameraAPI.FlashStatus f) {
             flashStatus = f;
+            return this;
+        }
+        public Builder maxSizeSmallerDimPixels(int s) {
+            maxSizeSmallerDim = s;
             return this;
         }
         public CameraAPIClient build() {

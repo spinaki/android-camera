@@ -72,8 +72,8 @@ final class CameraHandlerThread extends HandlerThread {
                     camera1.takePicture(new BaseCamera.PhotoTakenCallback() {
                         @Override
                         public void onPhotoTaken(byte[] data) {
-                            // TODO hack replace 800 with something meaningful from the API
-                            final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(data, 800);
+                            final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(data,
+                                    camera1.getMaxWidthSize());
 //                            final BitmapFactory.Options options = new BitmapFactory.Options();
 //                            options.inJustDecodeBounds = false;
 //                            final Bitmap bitmap =  BitmapFactory.decodeByteArray(data, 0, data.length, options);

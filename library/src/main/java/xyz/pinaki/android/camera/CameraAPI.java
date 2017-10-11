@@ -5,6 +5,7 @@ package xyz.pinaki.android.camera;
  */
 
 public class CameraAPI {
+    static final int DEFAULT_MAX_IMAGE_WIDTH = 800;
     public static final class LensFacing {
         private final String name;
         private LensFacing(String s) {

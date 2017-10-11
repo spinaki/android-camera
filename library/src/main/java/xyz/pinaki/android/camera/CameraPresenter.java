@@ -12,6 +12,7 @@ interface CameraPresenter {
     boolean onStart();
     void onStop();
     void setPreview(ViewFinderPreview v);
+    void setMaxWidthSizePixels(int s);
     boolean isCameraOpened();
     void setFacing(CameraAPI.LensFacing l);
     int getFacing();
