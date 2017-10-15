@@ -1,4 +1,4 @@
-package xyz.pinaki.android.camera;
+package xyz.pinaki.android.camera.orientation;
 
 import android.app.Activity;
 import android.hardware.Camera;
