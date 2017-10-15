@@ -1,15 +1,18 @@
 package xyz.pinaki.android.camera;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 import java.util.List;
 
@@ -25,13 +28,14 @@ import xyz.pinaki.androidcamera.R;
  * Created by pinaki on 8/11/17.
  */
 
-public class CameraFragment extends BaseCameraFragment implements CameraView {
+public class CameraFragment extends Fragment implements CameraView {
     private static final String TAG = CameraFragment.class.getName();
+    private static final int REQUEST_CAMERA_PERMISSION = 0;
     private CameraPresenter cameraPresenter;
     private ViewFinderPreview viewFinderPreview;
     private CameraAPI.PreviewType previewType;
     private CameraAPI.LensFacing currentFacing = CameraAPI.LensFacing.BACK;
-    private RelativeLayout parentView;
+    private View parentView;
     private AdjustableLayout autoFitCameraView;
     private DisplayOrientationDetector displayOrientationDetector;
     ViewGroup previewContainer;
@@ -71,36 +75,46 @@ public class CameraFragment extends BaseCameraFragment implements CameraView {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        parentView = (RelativeLayout) inflater.inflate(R.layout.camera_view_main, container, false);
-        return parentView;
+        View v =  inflater.inflate(R.layout.camera_view_main, container, false);
+        return v;
     }
 
+
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-        View shutterIcon = view.findViewById(R.id.shutter);
+    public void onViewCreated(View pView, Bundle savedInstanceState) {
+        parentView = pView;
+        if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) !=
+                PackageManager.PERMISSION_GRANTED) {
+            requestCameraPermission();
+        } else { // permissions have already been granted
+            startPreviewAndCamera();
+        }
+    }
+    private void startPreviewAndCamera() {
+        View shutterIcon = parentView.findViewById(R.id.shutter);
         shutterIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 shutterClicked();
             }
         });
-        View cameraSwitch = view.findViewById(R.id.switch_cam);
+        View cameraSwitch = parentView.findViewById(R.id.switch_cam);
         cameraSwitch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 switchCameraClicked();
             }
         });
-        previewContainer = (ViewGroup) view.findViewById(R.id.preview_container);
-        previewImage = (ImageView) view.findViewById(R.id.preview_image);
-        final ImageView previewCloseButton = (ImageView) view.findViewById(R.id.preview_close_icon);
+        previewContainer = (ViewGroup) parentView.findViewById(R.id.preview_container);
+        previewImage = (ImageView) parentView.findViewById(R.id.preview_image);
+        final ImageView previewCloseButton = (ImageView) parentView.findViewById(R.id.preview_close_icon);
         previewCloseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 previewContainer.setVisibility(View.INVISIBLE);
             }
         });
-        autoFitCameraView = (AdjustableLayout) view.findViewById(R.id.camera_adjust);
+        autoFitCameraView = (AdjustableLayout) parentView.findViewById(R.id.camera_adjust);
         ViewFinderPreview.Callback viwefinderCallback = new ViewFinderPreview.Callback() {
             @Override
             public void onSurfaceChanged() {
@@ -140,7 +154,9 @@ public class CameraFragment extends BaseCameraFragment implements CameraView {
 
     @Override
     public void onDestroyView() {
-        displayOrientationDetector.disable();
+        if (displayOrientationDetector != null) {
+            displayOrientationDetector.disable();
+        }
         super.onDestroyView();
     }
 
@@ -149,6 +165,25 @@ public class CameraFragment extends BaseCameraFragment implements CameraView {
         super.onCreate(savedInstanceState);
         cameraPresenter.setCameraStatusCallback(cameraStatusCallback);
         cameraPresenter.onCreate();
+    }
+
+    private void requestCameraPermission() {
+        if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+            // TODO: Add a DialogFragment to Show the details.
+        } else {
+            requestPermissions(new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_PERMISSION);
+        }
+    }
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == REQUEST_CAMERA_PERMISSION) {
+            if (grantResults.length == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                 startPreviewAndCamera();
+            } else {
+                Log.i(TAG, "CAMERA permission was NOT granted.");
+            }
+        }
     }
 
     @Override
