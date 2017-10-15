@@ -29,3 +29,4 @@ clockwise and thus the returned value here will be Surface.ROTATION_90.
  * For Selfie Camera / Front Facing camera you will have to handle special case. Understand why.
  * As per the google post -- the preview feed handles mirroring of image in the selfie cam.
  However, for the JPEG data -- you have to manually rotate it.
+* https://developer.android.com/reference/android/hardware/Camera.html#setDisplayOrientation(int)
