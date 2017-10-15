@@ -1,4 +1,4 @@
-package xyz.pinaki.android.camera;
+package xyz.pinaki.android.camera.preview;
 
 import android.content.Context;
 import android.support.v4.view.ViewCompat;
@@ -13,45 +13,45 @@ import android.view.ViewGroup;
  * Created by pinaki on 8/19/17.
  */
 
-final class SurfaceViewPreview extends ViewFinderPreview {
+public final class SurfaceViewPreview extends ViewFinderPreview {
     private static final String TAG = SurfaceViewPreview.class.getName();
     SurfaceView surfaceView;
     ViewGroup parentView;
     Context context;
-    SurfaceViewPreview(Context c, ViewGroup parent, Callback callback) {
+    public SurfaceViewPreview(Context c, ViewGroup parent, Callback callback) {
         super(callback);
         parentView = parent;
         context = c;
     }
 
     @Override
-    Surface getSurface() {
+    public Surface getSurface() {
         return surfaceView.getHolder().getSurface();
     }
 
     @Override
-    SurfaceHolder getSurfaceHolder() {
+    public SurfaceHolder getSurfaceHolder() {
         return surfaceView.getHolder();
     }
 
     @Override
-    View getView() {
+    public View getView() {
         return surfaceView;
     }
 
     @Override
-    Class gePreviewType() {
+    public Class gePreviewType() {
         return SurfaceHolder.class;
     }
 
     @Override
-    void stop() {
+    public void stop() {
         parentView.removeView(surfaceView);
         surfaceView = null;
     }
 
     @Override
-    void start() {
+    public void start() {
         surfaceView = new SurfaceView(context);
         parentView.addView(surfaceView, 0);
         final SurfaceHolder holder = surfaceView.getHolder();
@@ -78,7 +78,6 @@ final class SurfaceViewPreview extends ViewFinderPreview {
             public void surfaceDestroyed(SurfaceHolder h) {
                 Log.i(TAG, "SurfaceViewPreview destroyed");
                 dispatchSurfaceDestroyed();
-//                setSize(0, 0);
             }
         });
     }

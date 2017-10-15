@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import java.lang.ref.WeakReference;
 
 import xyz.pinaki.android.camera.dimension.AspectRatio;
+import xyz.pinaki.android.camera.preview.ViewFinderPreview;
 
 /**
  * Created by pinaki on 8/11/17.

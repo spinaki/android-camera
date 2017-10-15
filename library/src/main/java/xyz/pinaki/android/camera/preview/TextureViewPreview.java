@@ -1,4 +1,4 @@
-package xyz.pinaki.android.camera;
+package xyz.pinaki.android.camera.preview;
 
 import android.content.Context;
 import android.graphics.Matrix;
@@ -13,34 +13,34 @@ import android.view.ViewGroup;
  * Created by pinaki on 8/19/17.
  */
 
-final class TextureViewPreview extends ViewFinderPreview {
+public final class TextureViewPreview extends ViewFinderPreview {
     private static final String TAG = TextureViewPreview.class.getName();
     private TextureView textureView;
     ViewGroup parentView;
     Context context;
     private int displayOrientation;
-    TextureViewPreview(Context c, ViewGroup parent, Callback callback) {
+    public TextureViewPreview(Context c, ViewGroup parent, Callback callback) {
         super(callback);
         parentView = parent;
         context = c;
     }
 
     @Override
-    Surface getSurface() {
+    public Surface getSurface() {
         return new Surface(textureView.getSurfaceTexture());
     }
 
     @Override
-    SurfaceTexture getSurfaceTexture() {
+    public SurfaceTexture getSurfaceTexture() {
         return textureView.getSurfaceTexture();
     }
     @Override
-    View getView() {
+    public View getView() {
         return textureView;
     }
 
     @Override
-    void start() {
+    public void start() {
         textureView = new TextureView(context);
         parentView.addView(textureView, 0);
         textureView.setSurfaceTextureListener(new TextureView.SurfaceTextureListener() {
@@ -122,19 +122,19 @@ final class TextureViewPreview extends ViewFinderPreview {
     }
 
     @Override
-    void stop() {
+    public void stop() {
         parentView.removeView(textureView);
         textureView = null;
     }
 
     @Override
-    Class gePreviewType() {
+    public Class gePreviewType() {
         return SurfaceTexture.class;
     }
 
     // This method is called only from Camera2.
     @Override
-    void setBufferSize(int width, int height) {
+    public void setBufferSize(int width, int height) {
         textureView.getSurfaceTexture().setDefaultBufferSize(width, height);
     }
 

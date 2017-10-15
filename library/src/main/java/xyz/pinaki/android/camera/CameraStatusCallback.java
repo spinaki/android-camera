@@ -9,7 +9,7 @@ import xyz.pinaki.android.camera.dimension.Size;
 
 /**
  * Created by pinaki on 9/4/17.
- * Internal Interfaces used by the librarry
+ * Internal Interfaces used by the library
  */
 interface CameraStatusCallback {
     void onCameraOpen();

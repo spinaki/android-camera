@@ -1,4 +1,4 @@
-package xyz.pinaki.android.camera;
+package xyz.pinaki.android.camera.preview;
 
 import android.graphics.SurfaceTexture;
 import android.view.Surface;
@@ -9,7 +9,7 @@ import android.view.View;
  * Created by pinaki on 8/19/17.
  */
 
-abstract class ViewFinderPreview {
+public abstract class ViewFinderPreview {
     private Callback mCallback;
     private int width;
     private int height;
@@ -17,40 +17,40 @@ abstract class ViewFinderPreview {
         width = w;
         height = h;
     }
-    int getWidth() {
+    public int getWidth() {
         return width;
     }
-    int getHeight() {
+    public int getHeight() {
         return height;
     }
 
-    interface Callback {
+    public interface Callback {
         void onSurfaceChanged();
         void onSurfaceDestroyed();
         void onSurfaceCreated();
     }
-    ViewFinderPreview(Callback callback) {
+    public ViewFinderPreview(Callback callback) {
         mCallback = callback;
     }
-    abstract Surface getSurface();
+    public abstract Surface getSurface();
 
-    SurfaceHolder getSurfaceHolder() {
+    public SurfaceHolder getSurfaceHolder() {
         return null;
     }
-    SurfaceTexture getSurfaceTexture() {
+    public SurfaceTexture getSurfaceTexture() {
         return null;
     }
-    abstract View getView();
-    abstract void start();
-    abstract void stop();
+    public abstract View getView();
+    public abstract void start();
+    public abstract void stop();
 
-    abstract Class gePreviewType();
+    public abstract Class gePreviewType();
 
     protected void dispatchSurfaceChanged() {
         mCallback.onSurfaceChanged();
     }
 
-    void setBufferSize(int width, int height) {
+    public void setBufferSize(int width, int height) {
     }
     protected void dispatchSurfaceDestroyed() {
         mCallback.onSurfaceDestroyed();

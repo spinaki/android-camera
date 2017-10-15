@@ -1,4 +1,4 @@
-package xyz.pinaki.android.camera;
+package xyz.pinaki.android.camera.orientation;
 
 /**
  * Created by pinaki on 8/16/16.
@@ -26,11 +26,11 @@ import android.view.OrientationEventListener;
 // If applications want to rotate the picture to match the orientation of what users see,
 // apps should use OrientationEventListener and Camera.CameraInfo.
 //http://stackoverflow.com/questions/15808719/controlling-the-camera-to-take-pictures-in-portrait-doesnt-rotate-the-final-ima
-/* package */ class DeviceOrientationListener extends OrientationEventListener {
+public class DeviceOrientationListener extends OrientationEventListener {
     private int currentNormalizedOrientation = 0;
     private int rememberedNormalizedOrientation = 0;
 
-    /* package */ DeviceOrientationListener(Context context) {
+    public DeviceOrientationListener(Context context) {
         super(context, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
@@ -66,11 +66,11 @@ import android.view.OrientationEventListener;
         throw new RuntimeException("The physics as we know them are no more. Watch out for anomalies.");
     }
 
-    /* package */ void rememberOrientation() {
+    public void rememberOrientation() {
         rememberedNormalizedOrientation = currentNormalizedOrientation;
     }
 
-    /* package */ int getRememberedOrientation() {
+    public int getRememberedOrientation() {
         return rememberedNormalizedOrientation;
     }
 }

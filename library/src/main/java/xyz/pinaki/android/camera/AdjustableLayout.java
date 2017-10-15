@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.FrameLayout;
 
 import xyz.pinaki.android.camera.dimension.AspectRatio;
+import xyz.pinaki.android.camera.preview.ViewFinderPreview;
 
 /**
  * Created by pinaki on 9/3/17.

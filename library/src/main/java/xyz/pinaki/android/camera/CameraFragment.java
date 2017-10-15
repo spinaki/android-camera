@@ -15,6 +15,10 @@ import java.util.List;
 
 import xyz.pinaki.android.camera.dimension.AspectRatio;
 import xyz.pinaki.android.camera.dimension.Size;
+import xyz.pinaki.android.camera.orientation.DisplayOrientationDetector;
+import xyz.pinaki.android.camera.preview.SurfaceViewPreview;
+import xyz.pinaki.android.camera.preview.TextureViewPreview;
+import xyz.pinaki.android.camera.preview.ViewFinderPreview;
 import xyz.pinaki.androidcamera.R;
 
 /**
@@ -67,7 +71,6 @@ public class CameraFragment extends BaseCameraFragment implements CameraView {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.i(TAG, "onCreateView");
         parentView = (RelativeLayout) inflater.inflate(R.layout.camera_view_main, container, false);
         return parentView;
     }
@@ -107,13 +110,11 @@ public class CameraFragment extends BaseCameraFragment implements CameraView {
 
             @Override
             public void onSurfaceDestroyed() {
-                Log.i(TAG, "viewFinderPreview onSurfaceDestroyed");
                 cameraPresenter.onStop();
             }
 
             @Override
             public void onSurfaceCreated() {
-                Log.i(TAG, "viewFinderPreview onSurfaceCreated");
             }
         };
         if(previewType == CameraAPI.PreviewType.TEXTURE_VIEW) {
@@ -169,7 +170,6 @@ public class CameraFragment extends BaseCameraFragment implements CameraView {
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        Log.i(TAG, "onActivityCreated");
         super.onActivityCreated(savedInstanceState);
         if (getActivity() instanceof AppCompatActivity &&
                 ((AppCompatActivity) getActivity()).getSupportActionBar() != null) {

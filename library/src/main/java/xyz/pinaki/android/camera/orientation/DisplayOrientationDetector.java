@@ -1,4 +1,4 @@
-package xyz.pinaki.android.camera;
+package xyz.pinaki.android.camera.orientation;
 
 import android.content.Context;
 import android.util.SparseIntArray;
@@ -10,7 +10,7 @@ import android.view.Surface;
  * Created by pinaki on 9/5/17.
  */
 
-abstract class DisplayOrientationDetector {
+public abstract class DisplayOrientationDetector {
 
     private final OrientationEventListener mOrientationEventListener;
 

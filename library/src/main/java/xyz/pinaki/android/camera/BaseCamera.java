@@ -15,6 +15,8 @@ import java.util.TreeSet;
 
 import xyz.pinaki.android.camera.dimension.AspectRatio;
 import xyz.pinaki.android.camera.dimension.Size;
+import xyz.pinaki.android.camera.orientation.DeviceOrientationListener;
+import xyz.pinaki.android.camera.preview.ViewFinderPreview;
 
 /**
  * Created by pinaki on 8/11/17.
@@ -88,7 +90,6 @@ abstract class BaseCamera {
             }
             sizes.add(csize);
         }
-        Log.i(TAG, "getSupportedPreviewSizes all: " + aspectRatioSortedSizesMap.values());
         // aspect ratio should always be populated either with default or user input values.
         // find the sizes that have the aspect ratio as above
 

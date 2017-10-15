@@ -1,6 +1,7 @@
 package xyz.pinaki.android.camera;
 
 import xyz.pinaki.android.camera.dimension.AspectRatio;
+import xyz.pinaki.android.camera.preview.ViewFinderPreview;
 
 /**
  * Created by pinaki on 8/11/17.
