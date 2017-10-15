@@ -8,13 +8,63 @@ Add the library dependency to your `build.gradle`.
 ~~~~
 compile 'xyz.pinaki.android:camera:1.0.1'
 ~~~~
-Checkout the example app built using this library `app/src/main/java/xyz/pinaki/androidcamera/example`
-## Why This Library
-Not all hardware supports Camera2.
-Event if they are post Android 21, the cameras might not support the new `Camera2` API. Or even if one of the cameras
- support it -- the other might not. During my search, I was not able to find a lightweight library, which enables
- developer capture an image from either of the cameras and easily save it. Hence, I created this library.
+The main entry point to this library is the singleton `CameraController` class. You can use the `getInstance()`
+method to get an instance object of the class. Start the camera using the `launch` method of this class which takes
+three arguments:
+```java
+launch(AppCompatActivity activity, int containerID, Callback callback)
+```
+* As the first arguement, pass the `Activity` from which this is launched.
+* The Camera is launched inside a `Fragment`. You will have to define a place in your layout file to launch the
+`Fragment`. The ID of this node in the layout file is the second argument. For instance, in the layout file within the
+demo app, we define a `FrameLayout` where the camera will be displayed.
+```xml
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_height="match_parent" android:layout_width="match_parent"
+                android:orientation="vertical">
+    <FrameLayout android:layout_width="match_parent"
+                 android:layout_height="match_parent"
+                 android:id="@+id/container">
+    </FrameLayout>
+</LinearLayout>
+```
+* The third argument is a callback object which notifies the caller about various lifecycle events of the `Camera`.
+It is an instance of the interface CAmeraController.Callback and you can add your own code in the object about what
+you wich to do when these lifecycle events are triggered.
+```java
+public interface Callback {
+    void onCameraOpened();
+    void onCameraClosed();
+    void onPhotoTaken(byte[] data);
+    void onBitmapProcessed(Bitmap bitmap);
+}
+```
 
+Checkout the example app built using this library `app/src/main/java/xyz/pinaki/androidcamera/example`
+
+## Why This Library
+There are multiple issues with the camera libraries on Android.
+* The new  `Camera2` library is only supported by Android Lollipop (21) and higher. However, I have found in many
+ post 21 devices, the camera sensor does not behave well when used with `Camera2` library. In some cases, even if one
+  of the cameras support it -- the other might not. The `CameraCharacteristics` store the hardware level support.
+  This library includes the logic to choose the correct library.
+
+  During my search, I was not able to find a lightweight library, which enables developer capture an image from
+  either of the cameras with correct orientation and aspect ratios. Hence, I created this library.
+* Based on how the camera sensor is mounted on the device, we have to correct the preview image as well as the final
+bitmap. Else the orientation will be incorrect. Furthermore, based on how the user is holding the camera (portrait or
+ landscape), the final image needs to be corrected. This library takes care of those scenarios.
+* This library enables easily switch between front and rear cameras. The images from the front camera are corrected
+so that they show up as mirror reflections.
+* Handling the camera callbacks correctly in background thread without blocking the UI thread.
+* Correct Aspect Ratio for the camera (the cameras only support some aspect ratios), the  preview image (which are
+constrained by the display dimensions) and the final image.
+
+
+The above points are explained in details below. To summarize, the goal behind this library is to let app developers
+integrate camera in their apps and take a picture (with either of the front and rear facing cameras) without delving
+too much into the details of how the camera libraries are implemented. The final bitmap has the correct aspect ration
+ and orientation so they can either be save or uploaded to remote hosts like AWS S3.
 ## Functionality of this library
 * Most [examples](https://developer.android.com/guide/topics/media/camera.html#custom-camera) for the android camera, used the main
  UI thread to open the camera. However, this is discouraged in the [docs](https://developer.android.com/training/camera/cameradirect.html#TaskOpenCamera). The idea is to use a background thread to invoke it -- since

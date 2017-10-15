@@ -3,6 +3,7 @@ package xyz.pinaki.android.camera;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
@@ -18,6 +19,8 @@ import android.util.Log;
 public class CameraController {
     private static String TAG = CameraController.class.getSimpleName();
     private final boolean shouldFixOrientation = true;
+    private Camera2Fragment camera2Fragment;
+    private CameraFragment cameraFragment;
     private static class SingletonHolder {
         private static final CameraController INSTANCE = new CameraController();
     }
@@ -28,12 +31,14 @@ public class CameraController {
         return SingletonHolder.INSTANCE;
     }
 
-    public void launch(AppCompatActivity activity, int containerID) {
-        if (isCamera2Supported(activity)) {
-            Log.i(TAG, "Camera2 Supported");
-        } else {
-            Log.i(TAG, "Camera2 NOT Supported");
-        }
+    public interface Callback {
+        void onCameraOpened();
+        void onCameraClosed();
+        void onPhotoTaken(byte[] data);
+        void onBitmapProcessed(Bitmap bitmap);
+    }
+
+    public void launch(AppCompatActivity activity, int containerID, Callback callback) {
         if (shouldFixOrientation) {
             int orientation = activity.getResources().getConfiguration().orientation;
             if (orientation == Configuration.ORIENTATION_PORTRAIT) {
@@ -43,8 +48,29 @@ public class CameraController {
                 activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             }
         }
-        activity.getSupportFragmentManager().beginTransaction().replace(
-                containerID, CameraFragment.newInstance(), "CameraFragment").commit();
+
+        if (isCamera2Supported(activity) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            Log.i(TAG, "Camera2 Supported");
+            camera2Fragment = Camera2Fragment.newInstance();
+            camera2Fragment.setCallback(callback);
+            activity.getSupportFragmentManager().beginTransaction().replace(
+                    containerID, camera2Fragment, "Camera2Fragment").commit();
+        } else {
+            Log.i(TAG, "Camera2 NOT Supported");
+            cameraFragment = CameraFragment.newInstance();
+            cameraFragment.setCallback(callback);
+            activity.getSupportFragmentManager().beginTransaction().replace(
+                    containerID, cameraFragment, "Camera1Fragment").commit();
+        }
+    }
+
+    public void stop() {
+        if (camera2Fragment != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            camera2Fragment.setCallback(null);
+        }
+        if (cameraFragment != null) {
+            cameraFragment.setCallback(null);
+        }
     }
 
 
@@ -63,8 +89,10 @@ public class CameraController {
                 if ( hardwareSupport == null ) {
                     return false;
                 }
-                if (hardwareSupport == CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY || hardwareSupport ==
-                        CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LIMITED) {
+                if (hardwareSupport == CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY ) {
+                    return false;
+                }
+                if (hardwareSupport == CameraMetadata.INFO_SUPPORTED_HARDWARE_LEVEL_LIMITED) {
                     return false;
                 }
             }
