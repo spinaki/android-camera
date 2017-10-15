@@ -4,6 +4,48 @@ invoking the correct API --  the deprecated `android.hardware.Camera` or the new
 generated image in the bitmap format which you can save (as JPEGs etc) or render in your apps. The returned bitmap is
  guaranteed to have the correct orientation and resolution.
 ## Getting Started
+### V2 API
+Add via
+~~~~
+compile 'xyz.pinaki.android:camera:2.1.0'
+~~~~
+In addition to stability and various bug fixes, this new API has the following additional features:
+* You can now choose a `TextureView` or `SurfaceView` as your preview surface. Deafult is the more performant `SurfaceView`.
+The options are `CameraAPI.PreviewType.TEXTURE_VIEW` and `CameraAPI.PreviewType.SURFACE_VIEW` which can be set in the CameraAPIClient. See example below.
+* You can add a desired aspect ratio as input parameters. Different cameras support different aspect ratio.
+So if your camera does not supper the desired aspect ratio -- it chooses one by default.
+Additionally, in a callback `onAspectRatioAvailable` you get to know all possible size/ aspect ratio choices for your front and back cameras.
+Note that these are likely to be different. After you are aware of the supported sizes, in the next invocation, you can choose one of the available sizes.
+* You can also set the maximum size of the smaller dimension of the JPEG image.
+The smaller dimension is typically the top of the phone if you hold it in portrait mode.
+The resultant bitmap will have max that size, without disturbing the aspect ratio.
+* Back button navigation should work.
+
+Unfortunately, all this needed a major API change. We now have a CameraAPIClient
+See the MainActivity for detailed examples.
+````
+apiClient = new CameraAPIClient.Builder(this).
+                previewType(CameraAPI.PreviewType.TEXTURE_VIEW).
+                maxSizeSmallerDimPixels(1000).
+                desiredAspectRatio(aspectRatio).
+                build();
+````
+Start the camera by
+````
+apiClient.start(R.id.container, callback);
+````
+where Callback is an instance of CameraAPI.Callback
+````
+public interface Callback {
+        void onCameraOpened();
+        void onAspectRatioAvailable(AspectRatio desired, AspectRatio chosen, List<Size> availablePreviewSizes);
+        void onCameraClosed();
+        void onPhotoTaken(byte[] data);
+        void onBitmapProcessed(Bitmap bitmap);
+    }
+
+````
+### V1 API
 Add the library dependency to your `build.gradle`.
 ~~~~
 compile 'xyz.pinaki.android:camera:1.0.1'
