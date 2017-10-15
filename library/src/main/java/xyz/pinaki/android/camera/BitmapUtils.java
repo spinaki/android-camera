@@ -2,20 +2,13 @@ package xyz.pinaki.android.camera;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 
-/**
- * BitmapUtils provides all the util function required for bitmap modifications.
- *
- * @author Rekha
- */
 /* package */ class BitmapUtils {
     // ref - https://developer.android.com/training/displaying-bitmaps/load-bitmap.html
     /* package */ static Bitmap createSampledBitmapFromBytes(byte[] jpegByteArray, int maxDimensionSize) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeByteArray(jpegByteArray, 0, jpegByteArray.length, options);
-        Log.i("CAMERA-Bitmap", "Original width, height: " + options.outWidth + ", " + options.outHeight);
         double aspectRatio = options.outWidth * 1.0 / options.outHeight ;
         // compute the target width and height
         int targetWidth = 0 ; int targetHeight = 0;
@@ -26,12 +19,9 @@ import android.util.Log;
             targetHeight = maxDimensionSize;
             targetWidth = (int) (targetHeight * aspectRatio);
         }
-        Log.i("CAMERA-Bitmap", "target width, height: " + targetWidth + ", " + targetHeight);
         options.inSampleSize = calculateInSampleSize(options, targetWidth, targetHeight);
-        Log.i("CAMERA-Bitmap", "sample size: " + options.inSampleSize);
         options.inJustDecodeBounds = false;
         Bitmap bitmap =  BitmapFactory.decodeByteArray(jpegByteArray, 0, jpegByteArray.length, options);
-        Log.i("CAMERA-Bitmap", "Changed width, height: " + options.outWidth + ", " + options.outHeight);
         return bitmap;
     }
 
@@ -44,12 +34,9 @@ import android.util.Log;
         final int height = options.outHeight;
         final int width = options.outWidth;
         int inSampleSize = 1;
-
         if (height > reqHeight || width > reqWidth) {
-
             final int halfHeight = height / 2;
             final int halfWidth = width / 2;
-
             // Calculate the largest inSampleSize val8ue that is a power of 2 and
             // keeps both
             // height and width larger than the requested height and width.
