@@ -9,6 +9,7 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.os.Build;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
@@ -49,15 +50,15 @@ public class CameraController {
             }
         }
 
-        if (isCamera2Supported(activity) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (isCamera2Supported(activity)) {
             Log.i(TAG, "Camera2 Supported");
-            camera2Fragment = Camera2Fragment.newInstance();
+            Camera2Fragment camera2Fragment = Camera2Fragment.newInstance();
             camera2Fragment.setCallback(callback);
             activity.getSupportFragmentManager().beginTransaction().replace(
                     containerID, camera2Fragment, "Camera2Fragment").commit();
         } else {
             Log.i(TAG, "Camera2 NOT Supported");
-            cameraFragment = CameraFragment.newInstance();
+            CameraFragment cameraFragment = CameraFragment.newInstance();
             cameraFragment.setCallback(callback);
             activity.getSupportFragmentManager().beginTransaction().replace(
                     containerID, cameraFragment, "Camera1Fragment").commit();

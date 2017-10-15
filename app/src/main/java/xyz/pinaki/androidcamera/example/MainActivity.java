@@ -60,7 +60,6 @@ public class MainActivity extends AppCompatActivity {
                                            @NonNull int[] grantResults) {
         launchCamera();
     }
-
     @Override
     public void onDestroy() {
         CameraController.getInstance().stop();
