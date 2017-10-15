@@ -7,7 +7,7 @@ generated image in the bitmap format which you can save (as JPEGs etc) or render
 ### V2 API
 Add via
 ~~~~
-compile 'xyz.pinaki.android:camera:2.0.0'
+compile 'xyz.pinaki.android:camera:2.1.0'
 ~~~~
 In addition to stability and various bug fixes, this new API has the following additional features:
 * You can now choose a `TextureView` or `SurfaceView` as your preview surface. Deafult is the more performant `SurfaceView`.
