@@ -77,7 +77,7 @@ public final class CameraAPIClient {
         cameraView.setPreviewType(previewType);
         cameraView.setCallback(callback);
         activity.getSupportFragmentManager().beginTransaction().
-                replace(containerID, cameraView, "CameraFragment").commit();
+                replace(containerID, cameraView, "CameraFragment").addToBackStack("CameraFragment").commit();
     }
 
     public void stop() {

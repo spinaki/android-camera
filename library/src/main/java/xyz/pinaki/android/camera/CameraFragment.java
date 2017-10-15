@@ -64,7 +64,9 @@ public class CameraFragment extends Fragment implements CameraView {
 
         @Override
         public void onCameraClosed() {
-            apiCallback.onCameraClosed();
+            if (apiCallback != null) {
+                apiCallback.onCameraClosed();
+            }
         }
 
         @Override
