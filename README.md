@@ -11,14 +11,16 @@ compile 'xyz.pinaki.android:camera:2.1.0'
 ~~~~
 In addition to stability and various bug fixes, this new API has the following additional features:
 * You can now choose a `TextureView` or `SurfaceView` as your preview surface. Deafult is the more performant `SurfaceView`.
+The options are `CameraAPI.PreviewType.TEXTURE_VIEW` and `CameraAPI.PreviewType.SURFACE_VIEW` which can be set in the CameraAPIClient. See example below.
 * You can add a desired aspect ratio as input parameters. Different cameras support different aspect ratio.
 So if your camera does not supper the desired aspect ratio -- it chooses one by default.
 Additionally, in a callback `onAspectRatioAvailable` you get to know all possible size/ aspect ratio choices for your front and back cameras.
-Note that these are likely to be different. In the next invocation, you can choose one of the available sizes.
+Note that these are likely to be different. After you are aware of the supported sizes, in the next invocation, you can choose one of the available sizes.
 * You can also set the maximum size of the smaller dimension of the JPEG image.
 The smaller dimension is typically the top of the phone if you hold it in portrait mode.
 The resultant bitmap will have max that size, without disturbing the aspect ratio.
 * Back button navigation should work.
+
 Unfortunately, all this needed a major API change. We now have a CameraAPIClient
 See the MainActivity for detailed examples.
 ````
