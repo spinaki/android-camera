@@ -96,7 +96,6 @@ public class MainActivity extends AppCompatActivity {
             }
         };
         apiClient.start(R.id.container, callback);
-
     }
 
     private void requestWritePermission() {

@@ -19,6 +19,7 @@ class Camera2Presenter implements CameraPresenter {
     private WeakReference<AppCompatActivity> activity;
     private ViewFinderPreview viewFinderPreview;
     private AspectRatio desiredAspectRatio;
+    private CameraHandlerThread backgroundThread;
 
     @Override
     public void setCameraStatusCallback(CameraStatusCallback c) {
@@ -42,17 +43,21 @@ class Camera2Presenter implements CameraPresenter {
 
     @Override
     public void onCreate() {
-
+        backgroundThread = new CameraHandlerThread("Camera1Handler");
+        backgroundThread.start();
+        backgroundThread.prepareHandler();
     }
 
     @Override
     public void onDestroy() {
-
+        backgroundThread.quit();
+        backgroundThread.interrupt();
+        backgroundThread = null;
     }
 
     @Override
     public boolean onStart() {
-        camera2 = new Camera2(activity.get());
+        camera2 = new Camera2(activity.get(), backgroundThread);
         camera2.setPreview(viewFinderPreview);
         camera2.setFacing(lensFacing);
         camera2.setMaxWidthSize(maxWidthSize);

@@ -55,8 +55,7 @@ class Camera1Presenter implements CameraPresenter {
 
     @Override
     public void onCreate() {
-        Log.i("pinaki-Camera1Presenter", "start thread");
-        initThread();
+        backgroundThread = new CameraHandlerThread("Camera1Handler");
         backgroundThread.start();
         backgroundThread.prepareHandler();
     }
@@ -84,10 +83,6 @@ class Camera1Presenter implements CameraPresenter {
         m.obj = camera1;
         backgroundThread.queueMessage(m);
         return true;
-    }
-
-    private void initThread() {
-        backgroundThread = new CameraHandlerThread("Camera1Handler");
     }
 
     // primarily used to stop camera

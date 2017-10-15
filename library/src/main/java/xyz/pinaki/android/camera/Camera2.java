@@ -15,6 +15,9 @@ import android.hardware.camera2.TotalCaptureResult;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -44,10 +47,17 @@ class Camera2 extends BaseCamera {
     private CameraDevice cameraDevice;
     private CameraCaptureSession captureSession;
     private CaptureRequest.Builder previewRequestBuilder;
+    private HandlerThread backgroundThread;
+    private final Handler uiHandler = new Handler(Looper.getMainLooper());
 
     Camera2(AppCompatActivity a) {
         super(a);
     }
+    Camera2(AppCompatActivity a, HandlerThread h) {
+        super(a);
+        backgroundThread = h;
+    }
+
     @Override
     public boolean start() {
         if (!super.start()) {
@@ -88,7 +98,7 @@ class Camera2 extends BaseCamera {
 
     private void startOpeningCamera() {
         try {
-            cameraManager.openCamera(cameraId, cameraDeviceCallback, null);
+            cameraManager.openCamera(cameraId, cameraDeviceCallback, new Handler(backgroundThread.getLooper()));
         } catch (CameraAccessException e) {
             throw new RuntimeException("Failed to open camera: " + cameraId, e);
         }
@@ -138,7 +148,12 @@ class Camera2 extends BaseCamera {
                 updateAutoFocus();
 //            updateFlash(); TODO: add later
                 previewRequestBuilder.addTarget(viewFinderPreview.getSurface());
-                cameraStatusCallback.onCameraOpen();
+                uiHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        cameraStatusCallback.onCameraOpen();
+                    }
+                });
                 // set repeating request for preview
                 session.setRepeatingRequest(previewRequestBuilder.build(), mCaptureCallback, null);
             } catch (CameraAccessException e) {
@@ -323,12 +338,23 @@ class Camera2 extends BaseCamera {
                 Image.Plane[] planes = image.getPlanes();
                 if (planes.length > 0) {
                     ByteBuffer buffer = planes[0].getBuffer();
-                    byte[] data = new byte[buffer.remaining()];
+                    final byte[] data = new byte[buffer.remaining()];
                     buffer.get(data);
+                    uiHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            cameraStatusCallback.onPhotoTaken(data);
+                        }
+                    });
                     final Bitmap bitmap = BitmapUtils.createSampledBitmapFromBytes(data, getMaxWidthSize());
                     final Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap
                             .getHeight(), getImageTransformMatrix(), false);
-                    cameraStatusCallback.onBitmapProcessed(rotatedBitmap);
+                    uiHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            cameraStatusCallback.onBitmapProcessed(rotatedBitmap);
+                        }
+                    });
                 }
             }
         }
